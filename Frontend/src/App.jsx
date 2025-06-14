@@ -15,6 +15,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminHome from './pages/admin/AdminHome';
 import AdminProtectedRoute from './AdminProtectedRoutes';
 import AddProduct from './pages/products/AddProducts';
+import EditProduct from './pages/products/EditProduct';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -102,6 +103,10 @@ function App() {
             <AddProduct />
           </AdminProtectedRoute>
         }
+      />
+      <Route
+        path="/admin/edit/:id"
+        element={<EditProduct />}
       />
 
       {/* Catch-All for Unknown Routes */}

@@ -9,8 +9,8 @@ import logo from '../assets/images/logo.png';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white bottom-0 absolute w-full px-6 py-10 mt-10">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeInUp">
+    <footer className="bg-gray-900 text-white w-full px-6 py-10 mt-10">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Logo & Description */}
         <div className="flex flex-col items-center md:items-start">
           <img
@@ -61,7 +61,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Bottom Text */}
       <div className="text-center text-gray-500 text-sm mt-10 border-t border-gray-700 pt-4">
         &copy; {new Date().getFullYear()} UrbanKart. All rights reserved.
         Developed by Prince Bhatt

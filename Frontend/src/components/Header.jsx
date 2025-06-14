@@ -46,16 +46,21 @@ const Header = () => {
     return () => window.removeEventListener('storage', syncAuthData);
   }, []);
 
-  const navLinks = [
-    { label: 'Home', path: '/' },
-    { label: 'Shop', path: '/shop' },
-    { label: 'Categories', path: '/categories' },
-    { label: 'Cart', path: '/cart' },
-  ];
+  const navLinks = user
+    ? [
+        { label: 'Home', path: '/' },
+        { label: 'Shop', path: '/shop' },
+        { label: 'Categories', path: '/categories' },
+        { label: 'Cart', path: '/cart' },
+      ]
+    : [
+        { label: 'Home', path: '/' }, // Admin sees only Home
+      ];
 
   const isLoggedIn = !!user || !!admin;
   const displayName = user?.username || admin?.adminUsername;
   const profileLink = user ? '/userProfile' : admin ? '/adminProfile' : '#';
+  const userTypeLabel = user ? 'User' : admin ? 'Admin' : '';
 
   return (
     <header className="bg-white shadow-md w-full fixed top-0 left-0 z-50">
@@ -114,7 +119,10 @@ const Header = () => {
           ) : (
             <div className="flex items-center space-x-4">
               <span className="text-sm font-medium text-gray-600">
-                Hello, <strong>{displayName}</strong>
+                Hello,{' '}
+                <strong>
+                  {userTypeLabel}: {displayName}
+                </strong>
               </span>
               <NavLink
                 to={profileLink}
@@ -171,7 +179,10 @@ const Header = () => {
             ) : (
               <>
                 <span className="text-sm font-medium text-gray-600">
-                  Hello, <strong>{displayName}</strong>
+                  Hello,{' '}
+                  <strong>
+                    {userTypeLabel}: {displayName}
+                  </strong>
                 </span>
                 <NavLink
                   to={profileLink}
