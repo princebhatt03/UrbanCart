@@ -1,39 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
-import img from '../../assets/images/img1.avif';
-
-const dummyProducts = [
-  {
-    _id: 1,
-    name: 'UrbanKart T-Shirt',
-    price: 499,
-    category: 'Clothing',
-    image: img,
-  },
-  {
-    _id: 2,
-    name: 'Noise Smartwatch',
-    price: 2999,
-    category: 'Electronics',
-    image: img,
-  },
-  {
-    _id: 3,
-    name: 'Wireless Headphones',
-    price: 1999,
-    category: 'Accessories',
-    image: img,
-  },
-  {
-    _id: 4,
-    name: 'Sneakers',
-    price: 1499,
-    category: 'Footwear',
-    image: img,
-  },
-];
+import axios from 'axios';
 
 const AdminHome = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const token = localStorage.getItem('adminToken');
+        const res = await axios.get('http://localhost:3000/api/products', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setProducts(res.data.products || []);
+      } catch (err) {
+        setError('Failed to load products');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <>
       <Header />
@@ -45,35 +39,46 @@ const AdminHome = () => {
           Uploaded Products
         </h2>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {dummyProducts.map(product => (
-            <div
-              key={product._id}
-              className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-40 object-cover rounded-md mb-3"
-              />
-              <h3 className="text-lg font-semibold text-gray-800">
-                {product.name}
-              </h3>
-              <p className="text-gray-600 mt-1">
-                Category:{' '}
-                <span className="font-medium">{product.category}</span>
-              </p>
-              <p className="text-gray-800 font-bold mt-2">₹{product.price}</p>
-              <div className="flex justify-between mt-4">
-                <button className="text-sm bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500">
-                  Edit
-                </button>
-                <button className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
-                  Delete
-                </button>
+        {loading ? (
+          <p className="text-center text-gray-600">Loading...</p>
+        ) : error ? (
+          <p className="text-center text-red-600">{error}</p>
+        ) : products.length === 0 ? (
+          <p className="text-center text-gray-600">No products found.</p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {products.map(product => (
+              <div
+                key={product._id}
+                className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition">
+                <img
+                  src={`http://localhost:3000${product.image}`}
+                  alt={product.name}
+                  className="w-full h-40 object-cover rounded-md mb-3"
+                />
+
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 mt-1">
+                  Category:{' '}
+                  <span className="font-medium">
+                    {product.category || 'N/A'}
+                  </span>
+                </p>
+                <p className="text-gray-800 font-bold mt-2">₹{product.price}</p>
+                <div className="flex justify-between mt-4">
+                  <button className="text-sm bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500">
+                    Edit
+                  </button>
+                  <button className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

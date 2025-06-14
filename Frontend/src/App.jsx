@@ -14,6 +14,7 @@ import AdminRegister from './pages/admin/AdminRegister';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminHome from './pages/admin/AdminHome';
 import AdminProtectedRoute from './AdminProtectedRoutes';
+import AddProduct from './pages/products/AddProducts';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -90,6 +91,15 @@ function App() {
         element={
           <AdminProtectedRoute>
             <AdminDelete />
+          </AdminProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/addProducts"
+        element={
+          <AdminProtectedRoute>
+            <AddProduct />
           </AdminProtectedRoute>
         }
       />

@@ -3,11 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const path = require('path');
 const MongoStore = require('connect-mongo');
 const flash = require('express-flash');
 const connectToDb = require('./db/db');
 const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
+const productRoutes = require('./routes/product.routes');
+const fs = require('fs');
 
 connectToDb();
 
@@ -58,8 +61,15 @@ app.get('/', (req, res) => {
   return res.redirect(redirectUrl);
 });
 
+const uploadPath = path.join(__dirname, 'public/uploads');
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
 // ✅ 6. API Routes
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/products', productRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 module.exports = app;
