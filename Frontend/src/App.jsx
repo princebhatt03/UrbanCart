@@ -5,7 +5,7 @@ import FrontPage from './pages/FrontPage';
 import UserRegister from './pages/user/UserRegister';
 import UserLogin from './pages/user/UserLogin';
 import ErrorPage from './pages/ErrorPage';
-import ProtectedRoute from './ProtectedRoute';
+import ProtectedRoute from './UserProtectedRoute';
 import UserProfileUpdate from './pages/user/UserProfileUpdate';
 import UserDelete from './pages/user/UserDelete';
 import AdminDelete from './pages/admin/AdminDelete';
