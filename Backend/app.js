@@ -39,12 +39,12 @@ app.use(
     store: MongoStore.create({
       mongoUrl: process.env.DB_CONNECT,
       collectionName: 'sessions',
-      ttl: 14 * 24 * 60 * 60, // 14 days
+      ttl: 14 * 24 * 60 * 60,
     }),
     cookie: {
       httpOnly: true,
-      secure: false, // true in production with HTTPS
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
 });
 
 // ✅ 6. API Routes
-app.use('/api/user', userRoutes); 
-app.use('/api/admin', adminRoutes); 
+app.use('/api/user', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 module.exports = app;
