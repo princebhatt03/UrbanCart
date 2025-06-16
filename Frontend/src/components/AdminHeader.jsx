@@ -4,19 +4,22 @@ import { motion } from 'framer-motion';
 import {
   Menu,
   X,
-  Home,
-  PlusCircle,
-  UserCircle,
+  LayoutDashboard,
+  Users,
+  FileText,
   LogOut,
-  LogIn,
-  UserPlus,
 } from 'lucide-react';
 import logo from '../assets/images/logo.png';
+import defaultAvatar from '../assets/images/prof.webp'; // fallback image
 
 const AdminHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [admin, setAdmin] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
   const navigate = useNavigate();
+
+  const backendURL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -28,75 +31,53 @@ const AdminHeader = () => {
   };
 
   useEffect(() => {
-    const storedAdmin = JSON.parse(localStorage.getItem('adminInfo'));
-    setAdmin(storedAdmin || null);
+    const storedAdmin = localStorage.getItem('adminInfo');
+    if (storedAdmin) {
+      try {
+        const parsedAdmin = JSON.parse(storedAdmin);
+        setAdmin(parsedAdmin);
+
+        const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
+          ? `${backendURL}${parsedAdmin.profileImage}`
+          : defaultAvatar;
+
+        setProfileImageUrl(imageURL);
+      } catch (error) {
+        console.error('Failed to parse admin info:', error);
+      }
+    }
   }, []);
 
   const navLinks = [
-    { label: 'Home', path: '/', icon: <Home size={18} /> },
-    ...(admin
-      ? [
-          {
-            label: 'Add Products',
-            path: '/admin/add-product',
-            icon: <PlusCircle size={18} />,
-          },
-          {
-            label: 'Profile',
-            path: '/adminProfile',
-            icon: <UserCircle size={18} />,
-          },
-        ]
-      : []),
+    {
+      label: 'Dashboard',
+      path: '/adminHome',
+      icon: <LayoutDashboard size={18} />,
+    },
+    { label: 'Users', path: '/adminUsers', icon: <Users size={18} /> },
+    {
+      label: 'Documents',
+      path: '/adminDocuments',
+      icon: <FileText size={18} />,
+    },
   ];
 
-  const authLinks = admin
-    ? [
-        <span
-          key="adminName"
-          className="text-sm font-medium text-gray-600">
-          Hello, <strong>{admin.adminUsername}</strong>
-        </span>,
-        <button
-          key="logout"
-          onClick={handleLogout}
-          className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium">
-          <LogOut size={18} /> Logout
-        </button>,
-      ]
-    : [
-        <NavLink
-          key="login"
-          to="/adminLogin"
-          className="flex items-center gap-1 text-gray-700 hover:text-blue-600 font-medium">
-          <LogIn size={18} /> Login
-        </NavLink>,
-        <NavLink
-          key="register"
-          to="/adminRegister"
-          className="flex items-center gap-1 text-gray-700 hover:text-green-600 font-medium">
-          <UserPlus size={18} /> Register
-        </NavLink>,
-      ];
-
   return (
-    <header className="bg-white shadow-md w-full sticky top-0 left-0 z-50">
+    <header className="bg-white shadow-md w-full sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Logo */}
         <Link
-          to="/"
+          to="/adminHome"
           className="flex items-center">
           <img
             src={logo}
             alt="Logo"
             className="h-12 w-auto"
           />
-          <span className="ml-2 text-xl font-bold text-orange-500 hidden sm:inline">
-            UrbanKart Admin
+          <span className="ml-2 text-xl font-bold text-red-600 hidden sm:inline">
+            AdminPanel
           </span>
         </Link>
 
-        {/* Mobile Menu Button */}
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
@@ -105,24 +86,41 @@ const AdminHeader = () => {
           </button>
         </div>
 
-        {/* Desktop Nav */}
         <nav className="hidden md:flex space-x-6 items-center">
           {navLinks.map(link => (
             <NavLink
               key={link.path}
               to={link.path}
               className={({ isActive }) =>
-                `flex items-center gap-1 text-gray-700 hover:text-orange-500 transition ${
-                  isActive ? 'font-semibold text-orange-500' : ''
+                `flex items-center gap-1 text-gray-700 hover:text-red-500 transition duration-200 ${
+                  isActive ? 'font-semibold text-red-600' : ''
                 }`
               }>
               {link.icon}
               {link.label}
             </NavLink>
           ))}
-          {authLinks.map((item, index) => (
-            <div key={index}>{item}</div>
-          ))}
+
+          {admin && (
+            <div className="flex items-center space-x-4">
+              <NavLink
+                to="/adminProfile"
+                className="flex items-center gap-2 text-gray-700 hover:text-purple-600 font-medium">
+                <img
+                  src={profileImageUrl || defaultAvatar}
+                  alt="Admin Profile"
+                  className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
+                />
+                <span>{admin.fullName || 'Admin'}</span>
+              </NavLink>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium">
+                <LogOut size={18} />
+                Logout
+              </button>
+            </div>
+          )}
         </nav>
       </div>
 
@@ -132,27 +130,46 @@ const AdminHeader = () => {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           className="md:hidden bg-white shadow-lg px-4 pb-4">
-          <div className="flex flex-col space-y-3">
+          <div className="flex flex-col space-y-2">
             {navLinks.map(link => (
               <NavLink
                 key={link.path}
                 to={link.path}
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 text-gray-700 hover:text-orange-500 transition ${
-                    isActive ? 'font-semibold text-orange-500' : ''
+                  `flex items-center gap-2 text-gray-700 hover:text-red-500 transition-colors duration-200 ${
+                    isActive ? 'font-semibold text-red-600' : ''
                   }`
                 }>
-                {link.icon} {link.label}
+                {link.icon}
+                {link.label}
               </NavLink>
             ))}
-            {authLinks.map((item, index) => (
-              <div
-                key={index}
-                onClick={() => setMenuOpen(false)}>
-                {item}
-              </div>
-            ))}
+
+            {admin && (
+              <>
+                <NavLink
+                  to="/adminProfile"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 text-gray-700 hover:text-purple-600 font-medium">
+                  <img
+                    src={profileImageUrl || defaultAvatar}
+                    alt="Admin"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
+                  />
+                  <span>{admin.fullName || 'Admin'}</span>
+                </NavLink>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium">
+                  <LogOut size={18} />
+                  Logout
+                </button>
+              </>
+            )}
           </div>
         </motion.div>
       )}

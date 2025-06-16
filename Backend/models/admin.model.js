@@ -7,6 +7,7 @@ const adminSchema = new mongoose.Schema({
   email: { type: String, required: true },
   mobile: { type: String, required: true },
   password: { type: String, required: true },
+  profileImage: { type: String, default: '' },
   createdAt: {
     type: Date,
     default: Date.now,

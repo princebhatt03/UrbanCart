@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import defaultImage from '../../assets/images/prof.webp';
 
 const AdminDelete = () => {
   const navigate = useNavigate();
@@ -9,6 +10,10 @@ const AdminDelete = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [admin, setAdmin] = useState(null);
   const [token, setToken] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+
+  const backendURL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const storedAdmin = localStorage.getItem('adminInfo');
@@ -16,8 +21,15 @@ const AdminDelete = () => {
 
     if (storedAdmin && storedToken) {
       try {
-        setAdmin(JSON.parse(storedAdmin));
+        const parsedAdmin = JSON.parse(storedAdmin);
+        setAdmin(parsedAdmin);
         setToken(storedToken);
+
+        const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
+          ? `${backendURL}${parsedAdmin.profileImage}`
+          : defaultImage;
+
+        setPreviewImage(imageURL);
       } catch (err) {
         console.error('Error parsing admin data from localStorage:', err);
         navigate('/adminLogin');
@@ -33,10 +45,7 @@ const AdminDelete = () => {
 
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_BACKEND_URL ||
-          import.meta.env.VITE_LOCAL_BACKEND_URL
-        }/api/admin/delete/${admin.id}`,
+        `${backendURL}/api/admin/delete/${admin.id}`,
         {
           method: 'DELETE',
           headers: {
@@ -82,6 +91,16 @@ const AdminDelete = () => {
         <h2 className="text-xl font-semibold mb-2 text-red-600">
           Delete Admin Account
         </h2>
+
+        {/* Admin Image */}
+        <div className="flex justify-center mb-4">
+          <img
+            src={previewImage}
+            alt="Admin"
+            className="w-24 h-24 rounded-full border-2 border-red-400 object-cover"
+          />
+        </div>
+
         <p className="text-gray-700 mb-2">
           Admin Username: <strong>{admin.adminUsername}</strong>
         </p>

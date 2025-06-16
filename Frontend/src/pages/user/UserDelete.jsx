@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import defaultImage from '../../assets/images/prof.webp'; // replace with your default user image path
 
 const UserDelete = () => {
   const navigate = useNavigate();
@@ -9,6 +10,10 @@ const UserDelete = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+
+  const backendURL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const storedUser = localStorage.getItem('userInfo');
@@ -16,8 +21,15 @@ const UserDelete = () => {
 
     if (storedUser && storedToken) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
         setToken(storedToken);
+
+        const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
+          ? `${backendURL}${parsedUser.profileImage}`
+          : defaultImage;
+
+        setPreviewImage(imageURL);
       } catch (err) {
         console.error('Error parsing localStorage:', err);
         navigate('/userLogin');
@@ -32,20 +44,14 @@ const UserDelete = () => {
     setSuccessMessage('');
 
     try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_BACKEND_URL ||
-          import.meta.env.VITE_LOCAL_BACKEND_URL
-        }/api/user/delete/${user.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ password }),
-        }
-      );
+      const response = await fetch(`${backendURL}/api/user/delete/${user.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password }),
+      });
 
       const data = await response.json();
 
@@ -56,7 +62,6 @@ const UserDelete = () => {
         setShowModal(false);
         setPassword('');
 
-        // Delay redirect by 2.5 seconds
         setTimeout(() => {
           navigate('/userRegister');
         }, 2500);
@@ -83,6 +88,16 @@ const UserDelete = () => {
         <h2 className="text-xl font-semibold mb-2 text-red-600">
           Delete Account
         </h2>
+
+        {/* Profile Image */}
+        <div className="flex justify-center mb-4">
+          <img
+            src={previewImage}
+            alt="User"
+            className="w-24 h-24 rounded-full border-2 border-red-400 object-cover"
+          />
+        </div>
+
         <p className="text-gray-700 mb-2">
           Username: <strong>{user.username}</strong>
         </p>

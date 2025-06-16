@@ -1,18 +1,32 @@
 const Admin = require('../models/admin.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const JWT_EXPIRES_IN = '1d';
 
+function generateAdminToken(admin) {
+  return jwt.sign(
+    {
+      id: admin._id,
+      adminUsername: admin.adminUsername,
+      adminID: admin.adminID,
+      email: admin.email,
+      mobile: admin.mobile,
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+}
+
 function adminController() {
   return {
-    // -------------------------------
     // Register Admin
-    // -------------------------------
     async registerAdmin(req, res) {
       const { fullName, adminUsername, adminID, email, mobile, password } =
         req.body;
+      const profileImage = req.file ? `/uploads/${req.file.filename}` : '';
 
       if (
         !fullName ||
@@ -42,6 +56,7 @@ function adminController() {
           email,
           mobile,
           password: hashedPassword,
+          profileImage,
         });
 
         await newAdmin.save();
@@ -56,6 +71,7 @@ function adminController() {
             adminID: newAdmin.adminID,
             email: newAdmin.email,
             mobile: newAdmin.mobile,
+            profileImage: newAdmin.profileImage,
           },
         });
       } catch (error) {
@@ -64,9 +80,7 @@ function adminController() {
       }
     },
 
-    // -------------------------------
     // Admin Login
-    // -------------------------------
     async loginAdmin(req, res) {
       const { adminUsername, adminID, password } = req.body;
 
@@ -78,7 +92,6 @@ function adminController() {
 
       try {
         const admin = await Admin.findOne({ adminUsername, adminID });
-
         if (!admin) {
           return res.status(404).json({ message: 'Admin not found.' });
         }
@@ -88,17 +101,7 @@ function adminController() {
           return res.status(401).json({ message: 'Invalid credentials.' });
         }
 
-        const payload = {
-          id: admin._id,
-          adminUsername: admin.adminUsername,
-          adminID: admin.adminID,
-          email: admin.email,
-          mobile: admin.mobile,
-        };
-
-        const token = jwt.sign(payload, JWT_SECRET, {
-          expiresIn: JWT_EXPIRES_IN,
-        });
+        const token = generateAdminToken(admin);
 
         return res.status(200).json({
           success: true,
@@ -111,6 +114,7 @@ function adminController() {
             adminID: admin.adminID,
             email: admin.email,
             mobile: admin.mobile,
+            profileImage: admin.profileImage,
           },
         });
       } catch (error) {
@@ -119,9 +123,7 @@ function adminController() {
       }
     },
 
-    // -------------------------------
     // Authenticate Admin Token
-    // -------------------------------
     authenticateAdminToken(req, res, next) {
       const authHeader = req.headers['authorization'];
       const token = authHeader && authHeader.split(' ')[1];
@@ -139,9 +141,7 @@ function adminController() {
       });
     },
 
-    // -------------------------------
     // Logout Admin
-    // -------------------------------
     logoutAdmin(req, res) {
       return res.status(200).json({
         success: true,
@@ -149,63 +149,51 @@ function adminController() {
       });
     },
 
+    // Update Admin Profile (with image)
     async updateAdminProfile(req, res) {
-      const { currentPassword, updates } = req.body;
-      const adminId = req.admin._id;
-
       try {
+        const adminId = req.admin.id;
         const admin = await Admin.findById(adminId);
-        if (!admin) return res.status(404).json({ message: 'Admin not found' });
 
-        const isMatch = await bcrypt.compare(currentPassword, admin.password);
-        if (!isMatch)
+        if (!admin) {
+          return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        const { fullName, adminUsername, email, password, currentPassword } =
+          req.body;
+
+        if (!(await bcrypt.compare(currentPassword, admin.password))) {
           return res
             .status(401)
-            .json({ message: 'Incorrect current password' });
+            .json({ message: 'Current password is incorrect' });
+        }
 
-        if (updates.fullName) admin.fullName = updates.fullName;
-        if (updates.adminUsername) admin.adminUsername = updates.adminUsername;
-        if (updates.email) admin.email = updates.email;
-        if (updates.password)
-          admin.password = await bcrypt.hash(updates.password, 10);
+        if (fullName) admin.fullName = fullName;
+        if (adminUsername) admin.adminUsername = adminUsername;
+        if (email) admin.email = email;
+        if (password) {
+          const salt = await bcrypt.genSalt(10);
+          admin.password = await bcrypt.hash(password, salt);
+        }
+        if (req.file) {
+          admin.profileImage = `/uploads/${req.file.filename}`;
+        }
 
         await admin.save();
 
-        const tokenPayload = {
-          id: admin._id,
-          adminUsername: admin.adminUsername,
-          adminID: admin.adminID,
-          email: admin.email,
-          mobile: admin.mobile,
-        };
-
-        const newToken = jwt.sign(tokenPayload, JWT_SECRET, {
-          expiresIn: JWT_EXPIRES_IN,
+        const token = generateAdminToken(admin);
+        res.status(200).json({
+          message: 'Admin updated',
+          admin,
+          token,
         });
-
-        const updatedAdmin = {
-          id: admin._id,
-          fullName: admin.fullName,
-          adminUsername: admin.adminUsername,
-          adminID: admin.adminID,
-          email: admin.email,
-          mobile: admin.mobile,
-        };
-
-        res.json({
-          message: 'Profile updated successfully',
-          admin: updatedAdmin,
-          token: newToken,
-        });
-      } catch (err) {
-        console.error('Update Admin Error:', err.message);
-        res.status(500).json({ message: 'Server error' });
+      } catch (error) {
+        console.error('Admin profile update error:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
       }
     },
 
-    // -------------------------------
-    // Delete Admin (with password check)
-    // -------------------------------
+    // Delete Admin
     async deleteAdmin(req, res) {
       const adminId = req.params.id;
       const { password } = req.body;

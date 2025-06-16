@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 
 const UserRegister = () => {
   const navigate = useNavigate();
+  const [imagePreview, setImagePreview] = useState(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -21,9 +22,16 @@ const UserRegister = () => {
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
   const handleImageChange = e => {
-    setProfileImage(e.target.files[0]);
+    const file = e.target.files[0];
+    setProfileImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   const handleSubmit = async e => {
@@ -170,7 +178,12 @@ const UserRegister = () => {
             autoComplete="new-password"
             required
           />
-
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            Add profile photo{' '}
+            <span className="text-gray-500 text-xs">
+              (you can also leave it blank)
+            </span>
+          </label>
           {/* ✅ Profile Image Upload Field */}
           <input
             type="file"
@@ -178,6 +191,13 @@ const UserRegister = () => {
             onChange={handleImageChange}
             className="w-full px-5 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition"
           />
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Profile Preview"
+              className="w-24 h-24 object-cover rounded-full mx-auto border border-gray-300"
+            />
+          )}
 
           <motion.button
             whileHover={{ scale: 1.05 }}

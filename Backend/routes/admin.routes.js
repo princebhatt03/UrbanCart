@@ -1,37 +1,33 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller')();
-const isAdminLoggedIn = require('../middlewares/admin');
-const { authenticateAdminToken } = require('../middlewares/authMiddlewar');
+const isAdminLoggedIn = require('../middlewares/admin'); // JWT-based auth
+const upload = require('../middlewares/upload');
 
 // ******** ADMIN ROUTES ********
 
-// Admin Registration Route (Public)
-router.post('/register', adminController.registerAdmin);
+// Admin Registration Route (Public, with image)
+router.post(
+  '/register',
+  upload.single('profileImage'),
+  adminController.registerAdmin
+);
 
 // Admin Login Route (Public)
 router.post('/login', adminController.loginAdmin);
 
-// Admin Profile Update by ID (Protected via custom session middleware)
-router.patch(
-  '/update/:id',
-  isAdminLoggedIn,
-  adminController.updateAdminProfile
-);
-
 // Admin Profile Update using JWT token (Protected)
 router.put(
-  '/updateProfile',
-  authenticateAdminToken,
+  '/updateAdminProfile',
+  isAdminLoggedIn,
+  upload.single('profileImage'),
   adminController.updateAdminProfile
 );
 
-// Admin Delete by ID (Protected via custom session middleware)
-// routes/adminRoutes.js
-router.delete(
-  '/delete/:id',
-  authenticateAdminToken,
-  adminController.deleteAdmin
-);
+// Admin Delete by ID (Protected via JWT)
+router.delete('/delete/:id', isAdminLoggedIn, adminController.deleteAdmin);
+
+// Optional: Admin Logout (Client just removes token)
+router.post('/logout', adminController.logoutAdmin);
 
 module.exports = router;
