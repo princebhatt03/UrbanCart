@@ -2,15 +2,15 @@ const User = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Constants
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const JWT_EXPIRES_IN = '1d';
 
+function generateToken(userId) {
+  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
 function userController() {
   return {
-    // -------------------------------
-    // Register New User
-    // -------------------------------
     async registerUser(req, res) {
       const { fullName, username, email, mobile, password } = req.body;
 
@@ -25,6 +25,9 @@ function userController() {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profileImagePath = req.file
+          ? `/uploads/${req.file.filename}`
+          : '';
 
         const newUser = new User({
           fullName,
@@ -32,6 +35,7 @@ function userController() {
           email,
           mobile,
           password: hashedPassword,
+          profileImage: profileImagePath,
         });
 
         await newUser.save();
@@ -45,6 +49,7 @@ function userController() {
             username: newUser.username,
             email: newUser.email,
             mobile: newUser.mobile,
+            profileImage: newUser.profileImage,
           },
         });
       } catch (error) {
@@ -53,9 +58,6 @@ function userController() {
       }
     },
 
-    // -------------------------------
-    // Login User & Return JWT Token
-    // -------------------------------
     async loginUser(req, res) {
       const { username, password } = req.body;
 
@@ -81,6 +83,7 @@ function userController() {
           username: user.username,
           email: user.email,
           mobile: user.mobile,
+          profileImage: user.profileImage,
         };
 
         const token = jwt.sign(payload, JWT_SECRET, {
@@ -97,6 +100,7 @@ function userController() {
             username: user.username,
             email: user.email,
             mobile: user.mobile,
+            profileImage: user.profileImage,
           },
         });
       } catch (error) {
@@ -105,92 +109,49 @@ function userController() {
       }
     },
 
-    // -------------------------------
-    // Middleware - Token Authentication
-    // -------------------------------
-    authenticateToken(req, res, next) {
-      const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-
-      if (!token) {
-        return res.status(401).json({ message: 'Access token required.' });
-      }
-
-      jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-          return res.status(403).json({ message: 'Invalid or expired token.' });
-        }
-        req.user = decoded;
-        next();
-      });
-    },
-
-    // -------------------------------
-    // Logout (Client-side clears token)
-    // -------------------------------
-    logoutUser(req, res) {
-      return res.status(200).json({
-        success: true,
-        message: 'Logout successful. Please clear token from client.',
-      });
-    },
-
-    // -------------------------------
-    // Update User Profile
-    // -------------------------------
     async updateUserProfile(req, res) {
-      const userId = req.user.id;
-      const { currentPassword, updates } = req.body;
-
       try {
+        const userId = req.user.id;
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
+        const { fullName, username, email, mobile, currentPassword, password } =
+          req.body;
+
         const isMatch = await bcrypt.compare(currentPassword, user.password);
-        if (!isMatch) {
+        if (!isMatch)
           return res
             .status(401)
-            .json({ message: 'Incorrect current password' });
+            .json({ message: 'Current password is incorrect' });
+
+        if (req.file) {
+          user.profileImage = `/uploads/${req.file.filename}`;
         }
 
-        if (updates.password) {
-          updates.password = await bcrypt.hash(updates.password, 10);
-        }
+        if (fullName) user.fullName = fullName;
+        if (username) user.username = username;
+        if (email) user.email = email;
+        if (mobile) user.mobile = mobile;
+        if (password) user.password = await bcrypt.hash(password, 10);
 
-        Object.assign(user, updates);
         await user.save();
 
-        const newPayload = {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          mobile: user.mobile,
-        };
-
-        const newToken = jwt.sign(newPayload, JWT_SECRET, {
-          expiresIn: JWT_EXPIRES_IN,
-        });
-
-        res.json({
-          success: true,
+        const token = generateToken(user._id);
+        res.status(200).json({
           message: 'Profile updated successfully',
-          token: newToken,
-          user: newPayload,
+          user,
+          token,
         });
-      } catch (error) {
-        console.error('Error updating user:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+      } catch (err) {
+        console.error('Update Profile Error:', err);
+        res.status(500).json({ message: 'Internal server error' });
       }
     },
 
-    // -------------------------------
-    // Delete User (with password check)
-    // -------------------------------
     async deleteUser(req, res) {
       const userId = req.params.id;
       const { password } = req.body;
 
-      // Ensure the token’s user matches the ID being deleted
       if (req.user.id !== userId) {
         return res.status(403).json({ message: 'Unauthorized.' });
       }

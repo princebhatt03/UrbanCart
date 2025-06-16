@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import image1 from '../../assets/images/prof.webp';
 
 const UserProfileUpdate = () => {
   const navigate = useNavigate();
@@ -10,8 +11,12 @@ const UserProfileUpdate = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [previewImage, setPreviewImage] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
 
-  // Load user from localStorage
+  const backendURL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
   useEffect(() => {
     const userData = localStorage.getItem('userInfo');
     if (userData) {
@@ -25,7 +30,14 @@ const UserProfileUpdate = () => {
         password: '',
         newPassword: '',
         confirmNewPassword: '',
+        profileImage: parsedUser.profileImage || '',
       });
+
+      const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
+        ? `${backendURL}${parsedUser.profileImage}`
+        : { image1 };
+
+      setPreviewImage(imageURL);
     } else {
       navigate('/userLogin');
     }
@@ -33,6 +45,14 @@ const UserProfileUpdate = () => {
 
   const handleChange = e => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleImageChange = e => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImageFile(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
   };
 
   const openPasswordModal = e => {
@@ -62,40 +82,27 @@ const UserProfileUpdate = () => {
       return;
     }
 
-    const payload = {
-      currentPassword,
-      updates: {},
-    };
+    const payload = new FormData();
+    payload.append('currentPassword', currentPassword);
 
     if (formData.fullName !== user.fullName)
-      payload.updates.fullName = formData.fullName;
+      payload.append('fullName', formData.fullName);
     if (formData.username !== user.username)
-      payload.updates.username = formData.username;
-    if (formData.email !== user.email) payload.updates.email = formData.email;
+      payload.append('username', formData.username);
+    if (formData.email !== user.email) payload.append('email', formData.email);
     if (formData.mobile !== user.mobile)
-      payload.updates.mobile = formData.mobile;
-    if (formData.newPassword) payload.updates.password = formData.newPassword;
-
-    if (Object.keys(payload.updates).length === 0) {
-      setErrorMsg('No changes to update.');
-      return;
-    }
+      payload.append('mobile', formData.mobile);
+    if (formData.newPassword) payload.append('password', formData.newPassword);
+    if (profileImageFile) payload.append('profileImage', profileImageFile);
 
     try {
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_BACKEND_URL ||
-          import.meta.env.VITE_LOCAL_BACKEND_URL
-        }/api/user/updateUserProfile`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(`${backendURL}/api/user/updateUserProfile`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+        },
+        body: payload,
+      });
 
       const data = await response.json();
 
@@ -105,12 +112,16 @@ const UserProfileUpdate = () => {
           localStorage.setItem('userToken', data.token);
         }
 
-        setUser(data.user);
-        setFormData({
-          ...formData,
-          fullName: data.user.fullName,
-        });
+        const updatedImageURL = data.user.profileImage?.startsWith('/uploads/')
+          ? `${backendURL}${data.user.profileImage}`
+          : { image1 };
 
+        setUser(data.user);
+        setFormData(prev => ({
+          ...prev,
+          profileImage: data.user.profileImage,
+        }));
+        setPreviewImage(updatedImageURL);
         setSuccessMsg('Profile updated successfully!');
         setShowPasswordModal(false);
         setCurrentPassword('');
@@ -152,8 +163,22 @@ const UserProfileUpdate = () => {
         )}
 
         <form
-          className="space-y-5"
-          onSubmit={openPasswordModal}>
+          onSubmit={openPasswordModal}
+          className="space-y-5">
+          <div className="text-center">
+            <img
+              src={previewImage}
+              alt="Profile"
+              className="w-24 h-24 rounded-full mx-auto mb-2 object-cover border-2 border-indigo-400"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+          </div>
+
           <input
             type="text"
             name="fullName"
@@ -197,7 +222,7 @@ const UserProfileUpdate = () => {
           <input
             type="password"
             name="newPassword"
-            placeholder="New Password (leave blank if no change)"
+            placeholder="New Password (optional)"
             value={formData.newPassword}
             onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"

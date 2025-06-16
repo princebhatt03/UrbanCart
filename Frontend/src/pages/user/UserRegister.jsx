@@ -13,11 +13,17 @@ const UserRegister = () => {
     password: '',
   });
 
+  const [profileImage, setProfileImage] = useState(null);
+
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = e => {
+    setProfileImage(e.target.files[0]);
   };
 
   const handleSubmit = async e => {
@@ -45,20 +51,21 @@ const UserRegister = () => {
       return;
     }
 
+    const data = new FormData();
+    data.append('fullName', fullName.trim());
+    data.append('username', username.trim());
+    data.append('email', email.trim());
+    data.append('mobile', mobile.trim());
+    data.append('password', password.trim());
+    if (profileImage) data.append('profileImage', profileImage);
+
     try {
       const response = await fetch(`${finalURL}/api/user/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: fullName.trim(),
-          username: username.trim(),
-          email: email.trim(),
-          mobile: mobile.trim(),
-          password: password.trim(),
-        }),
+        body: data,
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (response.ok) {
         setSuccessMessage('User registered successfully!');
@@ -67,7 +74,7 @@ const UserRegister = () => {
           navigate('/userLogin');
         }, 2000);
       } else {
-        setErrorMessage(data.message || '❌ Registration failed.');
+        setErrorMessage(result.message || '❌ Registration failed.');
         setSuccessMessage('');
       }
     } catch (error) {
@@ -164,6 +171,14 @@ const UserRegister = () => {
             required
           />
 
+          {/* ✅ Profile Image Upload Field */}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full px-5 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition"
+          />
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -180,7 +195,6 @@ const UserRegister = () => {
             Go Back to Home
           </motion.button>
 
-          {/* ✅ NEW BUTTON for Admin Registration */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

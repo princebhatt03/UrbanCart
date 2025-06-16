@@ -1,71 +1,70 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import {
+  Menu,
+  X,
+  ShoppingCart,
+  LayoutGrid,
+  Home,
+  Store,
+  LogIn,
+  UserPlus,
+  LogOut,
+} from 'lucide-react';
 import logo from '../assets/images/logo.png';
+import defaultAvatar from '../assets/images/prof.webp'; // fallback image
 
-const Header = () => {
+const UserHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [admin, setAdmin] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
   const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  const backendURL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const handleLogout = () => {
-    if (user) {
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('userInfo');
-      setUser(null);
-      navigate('/userLogin');
-    } else if (admin) {
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminInfo');
-      setAdmin(null);
-      navigate('/adminLogin');
-    }
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userInfo');
+    setUser(null);
+    navigate('/userLogin');
   };
 
   useEffect(() => {
-    const syncAuthData = () => {
+    const storedUser = localStorage.getItem('userInfo');
+    if (storedUser) {
       try {
-        const storedUser = JSON.parse(localStorage.getItem('userInfo'));
-        const storedAdmin = JSON.parse(localStorage.getItem('adminInfo'));
-        setUser(storedUser || null);
-        setAdmin(storedAdmin || null);
-      } catch {
-        setUser(null);
-        setAdmin(null);
-      }
-    };
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
 
-    syncAuthData();
-    window.addEventListener('storage', syncAuthData);
-    return () => window.removeEventListener('storage', syncAuthData);
+        const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
+          ? `${backendURL}${parsedUser.profileImage}`
+          : defaultAvatar;
+
+        setProfileImageUrl(imageURL);
+      } catch (error) {
+        console.error('Failed to parse user info:', error);
+      }
+    }
   }, []);
 
-  const navLinks = user
-    ? [
-        { label: 'Home', path: '/' },
-        { label: 'Shop', path: '/shop' },
-        { label: 'Categories', path: '/categories' },
-        { label: 'Cart', path: '/cart' },
-      ]
-    : [
-        { label: 'Home', path: '/' }, // Admin sees only Home
-      ];
-
-  const isLoggedIn = !!user || !!admin;
-  const displayName = user?.username || admin?.adminUsername;
-  const profileLink = user ? '/userProfile' : admin ? '/adminProfile' : '#';
-  const userTypeLabel = user ? 'User' : admin ? 'Admin' : '';
+  const navLinks = [
+    { label: 'Home', path: '/', icon: <Home size={18} /> },
+    { label: 'Shop', path: '/shop', icon: <Store size={18} /> },
+    {
+      label: 'Categories',
+      path: '/categories',
+      icon: <LayoutGrid size={18} />,
+    },
+    { label: 'MyCart', path: '/cart', icon: <ShoppingCart size={18} /> },
+  ];
 
   return (
-    <header className="bg-white shadow-md w-full fixed top-0 left-0 z-50">
+    <header className="bg-white shadow-md w-full sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Logo */}
         <Link
           to="/"
           className="flex items-center">
@@ -79,7 +78,6 @@ const Header = () => {
           </span>
         </Link>
 
-        {/* Mobile Menu Button */}
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
@@ -88,50 +86,52 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Desktop Nav */}
         <nav className="hidden md:flex space-x-6 items-center">
           {navLinks.map(link => (
             <NavLink
               key={link.path}
               to={link.path}
               className={({ isActive }) =>
-                `text-gray-700 hover:text-orange-500 transition duration-200 ${
+                `flex items-center gap-1 text-gray-700 hover:text-orange-500 transition duration-200 ${
                   isActive ? 'font-semibold text-orange-500' : ''
                 }`
               }>
+              {link.icon}
               {link.label}
             </NavLink>
           ))}
 
-          {!isLoggedIn ? (
+          {!user ? (
             <>
               <NavLink
                 to="/userLogin"
-                className="text-gray-700 hover:text-blue-600 transition font-medium">
+                className="flex items-center gap-1 text-gray-700 hover:text-blue-600 font-medium">
+                <LogIn size={18} />
                 Login
               </NavLink>
               <NavLink
                 to="/userRegister"
-                className="text-gray-700 hover:text-green-600 transition font-medium">
+                className="flex items-center gap-1 text-gray-700 hover:text-green-600 font-medium">
+                <UserPlus size={18} />
                 Create Account
               </NavLink>
             </>
           ) : (
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-600">
-                Hello,{' '}
-                <strong>
-                  {userTypeLabel}: {displayName}
-                </strong>
-              </span>
               <NavLink
-                to={profileLink}
-                className="text-gray-700 hover:text-purple-600 transition font-medium">
-                Profile
+                to="/userProfile"
+                className="flex items-center gap-2 text-gray-700 hover:text-purple-600 font-medium">
+                <img
+                  src={profileImageUrl || defaultAvatar}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
+                />
+                <span>{user.fullName || 'Profile'}</span>
               </NavLink>
               <button
                 onClick={handleLogout}
-                className="text-red-500 hover:text-red-700 font-medium">
+                className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium">
+                <LogOut size={18} />
                 Logout
               </button>
             </div>
@@ -144,7 +144,6 @@ const Header = () => {
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
           className="md:hidden bg-white shadow-lg px-4 pb-4">
           <div className="flex flex-col space-y-2">
             {navLinks.map(link => (
@@ -153,49 +152,52 @@ const Header = () => {
                 to={link.path}
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
-                  `block text-gray-700 hover:text-orange-500 transition-colors duration-200 ${
+                  `flex items-center gap-2 text-gray-700 hover:text-orange-500 transition-colors duration-200 ${
                     isActive ? 'font-semibold text-orange-500' : ''
                   }`
                 }>
+                {link.icon}
                 {link.label}
               </NavLink>
             ))}
 
-            {!isLoggedIn ? (
+            {!user ? (
               <>
                 <NavLink
                   to="/userLogin"
                   onClick={() => setMenuOpen(false)}
-                  className="block text-gray-700 hover:text-blue-600 font-medium">
+                  className="flex items-center gap-1 text-gray-700 hover:text-blue-600 font-medium">
+                  <LogIn size={18} />
                   Login
                 </NavLink>
                 <NavLink
                   to="/userRegister"
                   onClick={() => setMenuOpen(false)}
-                  className="block text-gray-700 hover:text-green-600 font-medium">
+                  className="flex items-center gap-1 text-gray-700 hover:text-green-600 font-medium">
+                  <UserPlus size={18} />
                   Create Account
                 </NavLink>
               </>
             ) : (
               <>
-                <span className="text-sm font-medium text-gray-600">
-                  Hello,{' '}
-                  <strong>
-                    {userTypeLabel}: {displayName}
-                  </strong>
-                </span>
                 <NavLink
-                  to={profileLink}
+                  to="/userProfile"
                   onClick={() => setMenuOpen(false)}
-                  className="block text-gray-700 hover:text-purple-600 font-medium">
-                  Profile
+                  className="flex items-center gap-2 text-gray-700 hover:text-purple-600 font-medium">
+                  <img
+                    src={profileImageUrl || defaultAvatar}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
+                  />
+                  <span>{user.fullName || 'Profile'}</span>
                 </NavLink>
                 <button
                   onClick={() => {
                     handleLogout();
                     setMenuOpen(false);
                   }}
-                  className="text-left text-red-500 hover:text-red-700 font-medium">
+                  className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium">
+                  <LogOut size={18} />
                   Logout
                 </button>
               </>
@@ -207,4 +209,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default UserHeader;

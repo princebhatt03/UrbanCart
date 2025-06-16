@@ -6,6 +6,13 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true },
   mobile: { type: String, required: true },
   password: { type: String, required: true },
+
+  // ✅ New field for Profile Image
+  profileImage: {
+    type: String,
+    default: 'https://via.placeholder.com/150',
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

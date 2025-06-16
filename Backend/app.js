@@ -70,6 +70,6 @@ if (!fs.existsSync(uploadPath)) {
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 module.exports = app;

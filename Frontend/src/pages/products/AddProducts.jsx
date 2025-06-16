@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import {
+  ImagePlus,
+  Loader2,
+  IndianRupee,
+  Tag,
+  Type,
+  StickyNote,
+  Upload,
+} from 'lucide-react';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -52,7 +62,7 @@ const AddProduct = () => {
       );
 
       setMessage({ type: 'success', text: res.data.message });
-      setFormData({ name: '', price: '', description: '' });
+      setFormData({ name: '', price: '', category: '', description: '' });
       setImageFile(null);
 
       setTimeout(() => navigate('/adminHome'), 1500);
@@ -65,15 +75,25 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-xl">
-      <h2 className="text-2xl font-bold mb-6 text-center">Add New Product</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-2xl rounded-2xl">
+      <h2 className="text-3xl font-extrabold text-center text-orange-600 mb-6 flex items-center justify-center gap-2">
+        <Upload
+          className="text-orange-500"
+          size={28}
+        />{' '}
+        Add New Product
+      </h2>
 
       {message.text && (
         <div
-          className={`mb-4 p-3 text-sm rounded ${
+          className={`mb-4 p-3 rounded-md text-sm text-center ${
             message.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-700'
+              : 'bg-red-100 text-red-700'
           }`}>
           {message.text}
         </div>
@@ -81,11 +101,11 @@ const AddProduct = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-4"
+        className="space-y-5"
         encType="multipart/form-data">
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Product Name
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-semibold flex items-center gap-1">
+            <Tag size={18} /> Product Name
           </label>
           <input
             type="text"
@@ -93,49 +113,58 @@ const AddProduct = () => {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded"
+            placeholder="Enter product name"
+            className="px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
         </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">Price (₹)</label>
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-semibold flex items-center gap-1">
+            <IndianRupee size={18} /> Price (₹)
+          </label>
           <input
             type="text"
             name="price"
             value={formData.price}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded"
+            placeholder="Enter price"
+            className="px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
         </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">Category</label>
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-semibold flex items-center gap-1">
+            <Type size={18} /> Category
+          </label>
           <input
             type="text"
             name="category"
-            placeholder="Enter product category"
             value={formData.category}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            placeholder="Enter product category"
+            className="px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
         </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">Description</label>
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-semibold flex items-center gap-1">
+            <StickyNote size={18} /> Description
+          </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleChange}
             required
             rows="3"
-            className="w-full px-4 py-2 border rounded"></textarea>
+            placeholder="Enter product description"
+            className="px-4 py-2 border rounded-md shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"></textarea>
         </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Product Image
+        <div className="flex flex-col">
+          <label className="text-gray-700 font-semibold flex items-center gap-1">
+            <ImagePlus size={18} /> Product Image
           </label>
           <input
             type="file"
@@ -143,18 +172,42 @@ const AddProduct = () => {
             accept="image/*"
             onChange={handleFileChange}
             required
-            className="w-full px-4 py-2 border rounded"
+            className="px-4 py-2 border rounded-md file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-md file:bg-orange-600 file:text-white hover:file:bg-orange-700"
           />
         </div>
 
-        <button
+        <motion.button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white font-semibold py-2 rounded">
-          {loading ? 'Adding...' : 'Add Product'}
-        </button>
+          whileTap={{ scale: 0.96 }}
+          className="w-full bg-orange-600 hover:bg-orange-700 transition duration-200 text-white font-semibold py-2 rounded-lg shadow-md flex justify-center items-center gap-2">
+          {loading ? (
+            <Loader2
+              className="animate-spin"
+              size={20}
+            />
+          ) : (
+            <Upload size={20} />
+          )}
+          {loading ? 'Adding Product...' : 'Add Product'}
+        </motion.button>
+        <motion.button
+          onClick={() => navigate('/adminHome')}
+          disabled={loading}
+          whileTap={{ scale: 0.96 }}
+          className="w-full bg-red-600 hover:bg-red-700 transition duration-200 text-white font-semibold py-2 rounded-lg shadow-md flex justify-center items-center gap-2">
+          {loading ? (
+            <Loader2
+              className="animate-spin"
+              size={20}
+            />
+          ) : (
+            <Upload size={20} />
+          )}
+          Cancel
+        </motion.button>
       </form>
-    </div>
+    </motion.div>
   );
 };
 

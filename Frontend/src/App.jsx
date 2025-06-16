@@ -16,6 +16,7 @@ import AdminHome from './pages/admin/AdminHome';
 import AdminProtectedRoute from './AdminProtectedRoutes';
 import AddProduct from './pages/products/AddProducts';
 import EditProduct from './pages/products/EditProduct';
+import Cart from './pages/products/Cart';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -63,10 +64,22 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/cart"
+        element={
+          <ProtectedRoute>
+            <Cart />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/adminHome"
-        element={<AdminHome />}
+        element={
+          <AdminProtectedRoute>
+            <AdminHome />
+          </AdminProtectedRoute>
+        }
       />
       <Route
         path="/adminLogin"

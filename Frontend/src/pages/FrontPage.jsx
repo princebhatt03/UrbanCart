@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import Header from '../components/Header';
+import Header from '../components/UserHeader';
 import Footer from '../components/Footer';
+import Slider from '../components/Slider';
 
 const FrontPage = () => {
   const [products, setProducts] = useState([]);
@@ -26,6 +27,7 @@ const FrontPage = () => {
   return (
     <>
       <Header />
+      <Slider />
       <main className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 bg-gray-50 min-h-screen">
         <h1 className="text-4xl font-bold text-center text-orange-600 mb-10">
           Latest Products
