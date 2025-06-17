@@ -35,8 +35,8 @@ const UserProfileUpdate = () => {
 
       const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
         ? `${backendURL}${parsedUser.profileImage}`
-        : { image1 };
-        
+        : image1;
+
       setPreviewImage(imageURL);
     } else {
       navigate('/userLogin');

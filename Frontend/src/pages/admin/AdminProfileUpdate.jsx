@@ -118,6 +118,12 @@ const AdminProfileUpdate = () => {
         if (data.token) {
           localStorage.setItem('adminToken', data.token);
         }
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+
+          // 👇 Force token sync after update
+          window.dispatchEvent(new Event('storage'));
+        }
 
         const updatedImageURL = data.admin.profileImage?.startsWith('/uploads/')
           ? `${backendURL}${data.admin.profileImage}`

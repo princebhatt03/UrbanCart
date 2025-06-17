@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-
 import FrontPage from './pages/FrontPage';
 import UserRegister from './pages/user/UserRegister';
 import UserLogin from './pages/user/UserLogin';

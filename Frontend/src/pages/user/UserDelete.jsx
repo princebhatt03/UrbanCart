@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import defaultImage from '../../assets/images/prof.webp'; // replace with your default user image path
+import defaultImage from '../../assets/images/prof.webp';
 
 const UserDelete = () => {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ const UserDelete = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(defaultImage);
 
   const backendURL =
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -43,19 +43,28 @@ const UserDelete = () => {
     setErrorMessage('');
     setSuccessMessage('');
 
+    if (!user || !user._id) {
+      setErrorMessage('User data is incomplete.');
+      return;
+    }
+
     try {
-      const response = await fetch(`${backendURL}/api/user/delete/${user.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ password }),
-      });
+      const response = await fetch(
+        `${backendURL}/api/user/delete/${user._id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password }),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
+        // Clear localStorage and redirect
         localStorage.removeItem('userInfo');
         localStorage.removeItem('userToken');
         setSuccessMessage('User Deleted Successfully!');
@@ -64,7 +73,7 @@ const UserDelete = () => {
 
         setTimeout(() => {
           navigate('/userRegister');
-        }, 2500);
+        }, 2000);
       } else {
         setErrorMessage(data.message || 'Failed to delete user.');
       }
@@ -121,18 +130,20 @@ const UserDelete = () => {
           </button>
         </div>
 
-        {/* Password Confirmation Modal */}
+        {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-transparent backdrop-blur flex justify-center items-center z-50">
+          <div className="fixed inset-0 bg-transparent backdrop-blur bg-opacity-30 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
               <h3 className="text-lg font-semibold mb-4 text-center text-red-600">
                 Confirm Deletion
               </h3>
+
               {errorMessage && (
                 <p className="text-red-500 text-sm mb-3 text-center">
                   {errorMessage}
                 </p>
               )}
+
               <input
                 type="password"
                 placeholder="Enter your password"
@@ -141,6 +152,7 @@ const UserDelete = () => {
                 onChange={e => setPassword(e.target.value)}
                 autoFocus
               />
+
               <div className="flex justify-between">
                 <button
                   onClick={() => {

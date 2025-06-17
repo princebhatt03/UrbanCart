@@ -6,12 +6,12 @@ const {
   getAllProducts,
   getProductById,
   updateProduct,
-  deleteProduct
+  deleteProduct,
 } = require('../controllers/product.controller');
 
 const isAdmin = require('../middlewares/admin');
 
-// POST: Add Product with image upload (image saved to public/uploads/)
+// POST: Add Product
 router.post('/add', isAdmin, upload.single('image'), addProduct);
 
 // GET: All Products

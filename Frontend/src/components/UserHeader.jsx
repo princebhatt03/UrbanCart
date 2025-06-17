@@ -13,7 +13,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import logo from '../assets/images/logo.png';
-import defaultAvatar from '../assets/images/prof.webp'; // fallback image
+import defaultAvatar from '../assets/images/prof.webp'; 
 
 const UserHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);

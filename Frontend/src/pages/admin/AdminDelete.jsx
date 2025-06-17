@@ -16,27 +16,33 @@ const AdminDelete = () => {
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    const storedAdmin = localStorage.getItem('adminInfo');
-    const storedToken = localStorage.getItem('adminToken');
+    const loadAdmin = () => {
+      const storedAdmin = localStorage.getItem('adminInfo');
+      const storedToken = localStorage.getItem('adminToken');
 
-    if (storedAdmin && storedToken) {
-      try {
-        const parsedAdmin = JSON.parse(storedAdmin);
-        setAdmin(parsedAdmin);
-        setToken(storedToken);
-
-        const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
-          ? `${backendURL}${parsedAdmin.profileImage}`
-          : defaultImage;
-
-        setPreviewImage(imageURL);
-      } catch (err) {
-        console.error('Error parsing admin data from localStorage:', err);
+      if (storedAdmin && storedToken) {
+        try {
+          const parsedAdmin = JSON.parse(storedAdmin);
+          setAdmin(parsedAdmin);
+          setToken(storedToken);
+          const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
+            ? `${backendURL}${parsedAdmin.profileImage}`
+            : defaultImage;
+          setPreviewImage(imageURL);
+        } catch (err) {
+          console.error('Error parsing admin data from localStorage:', err);
+          navigate('/adminLogin');
+        }
+      } else {
         navigate('/adminLogin');
       }
-    } else {
-      navigate('/adminLogin');
-    }
+    };
+
+    loadAdmin();
+
+    // Listen to localStorage token changes
+    window.addEventListener('storage', loadAdmin);
+    return () => window.removeEventListener('storage', loadAdmin);
   }, [navigate]);
 
   const handleDelete = async () => {
@@ -45,7 +51,7 @@ const AdminDelete = () => {
 
     try {
       const response = await fetch(
-        `${backendURL}/api/admin/delete/${admin.id}`,
+        `${backendURL}/api/admin/delete/${admin._id}`,
         {
           method: 'DELETE',
           headers: {
@@ -102,7 +108,7 @@ const AdminDelete = () => {
         </div>
 
         <p className="text-gray-700 mb-2">
-          Admin Username: <strong>{admin.adminUsername}</strong>
+          Username: <strong>{admin.adminUsername}</strong>
         </p>
         <p className="text-gray-700 mb-4">
           Full Name: <strong>{admin.fullName}</strong>
@@ -127,9 +133,9 @@ const AdminDelete = () => {
           </button>
         </div>
 
-        {/* Modal for password confirmation */}
+        {/* Password Confirmation Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-transparent backdrop-blur flex justify-center items-center z-50">
+          <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
               <h3 className="text-lg font-semibold mb-4 text-center text-red-600">
                 Confirm Admin Deletion

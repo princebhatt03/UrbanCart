@@ -1,22 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin.controller')();
-const isAdminLoggedIn = require('../middlewares/admin'); // JWT-based auth
+const isAdminLoggedIn = require('../middlewares/admin');
 const upload = require('../middlewares/upload');
 
 // ******** ADMIN ROUTES ********
 
-// Admin Registration Route (Public, with image)
+// Admin Registration Route
 router.post(
   '/register',
   upload.single('profileImage'),
   adminController.registerAdmin
 );
 
-// Admin Login Route (Public)
+// Admin Login Route
 router.post('/login', adminController.loginAdmin);
 
-// Admin Profile Update using JWT token (Protected)
+// Admin Profile Update
 router.put(
   '/updateAdminProfile',
   isAdminLoggedIn,
@@ -24,10 +24,10 @@ router.put(
   adminController.updateAdminProfile
 );
 
-// Admin Delete by ID (Protected via JWT)
+// Admin Delete by ID
 router.delete('/delete/:id', isAdminLoggedIn, adminController.deleteAdmin);
 
-// Optional: Admin Logout (Client just removes token)
+// Optional: Admin Logout
 router.post('/logout', adminController.logoutAdmin);
 
 module.exports = router;

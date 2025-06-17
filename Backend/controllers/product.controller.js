@@ -32,6 +32,7 @@ const addProduct = async (req, res) => {
   }
 };
 
+// Get All Products Controller
 const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -41,6 +42,8 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch products' });
   }
 };
+
+// Get All Products by ID Controller
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -51,6 +54,7 @@ const getProductById = async (req, res) => {
   }
 };
 
+// Update Products
 const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category } = req.body;
@@ -82,25 +86,18 @@ const deleteProduct = async (req, res) => {
     const { password } = req.body;
     const productId = req.params.id;
 
-    // Get Admin
     const admin = await Admin.findById(req.admin.id);
     if (!admin) {
       return res.status(401).json({ message: 'Unauthorized: Admin not found' });
     }
-
-    // Check password
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Incorrect password' });
     }
-
-    // Find Product
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
-
-    // Remove image file if exists (optional)
     const imagePath = path.join(
       __dirname,
       '..',
@@ -111,8 +108,6 @@ const deleteProduct = async (req, res) => {
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
     }
-
-    // Delete product from DB
     await product.deleteOne();
 
     return res.status(200).json({ message: 'Product deleted successfully' });
@@ -122,7 +117,6 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-// Export controller(s)
 module.exports = {
   addProduct,
   getAllProducts,

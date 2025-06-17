@@ -149,7 +149,7 @@ function adminController() {
       });
     },
 
-    // Update Admin Profile (with image)
+    // Update Admin Profile
     async updateAdminProfile(req, res) {
       try {
         const adminId = req.admin.id;

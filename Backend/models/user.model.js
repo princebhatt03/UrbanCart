@@ -7,10 +7,10 @@ const userSchema = new mongoose.Schema({
   mobile: { type: String, required: true },
   password: { type: String, required: true },
 
-  // ✅ New field for Profile Image
   profileImage: {
     type: String,
-    default: 'https://via.placeholder.com/150',
+    default:
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqafzhnwwYzuOTjTlaYMeQ7hxQLy_Wq8dnQg&s',
   },
 
   createdAt: {

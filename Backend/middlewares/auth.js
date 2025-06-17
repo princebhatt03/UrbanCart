@@ -1,4 +1,3 @@
-// utils/generateAdminToken.js
 const jwt = require('jsonwebtoken');
 
 const generateAdminToken = admin => {
