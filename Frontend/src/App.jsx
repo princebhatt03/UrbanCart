@@ -16,11 +16,13 @@ import AdminProtectedRoute from './AdminProtectedRoutes';
 import AddProduct from './pages/products/AddProducts';
 import EditProduct from './pages/products/EditProduct';
 import Cart from './pages/products/Cart';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Shop from './pages/products/Shop';
+import Category from './pages/products/Category';
 
 function App() {
   const [user, setUser] = useState(null);
-
-  // Load user data on initial mount
   useEffect(() => {
     const info = localStorage.getItem('userInfo');
     if (info) setUser(JSON.parse(info));
@@ -50,6 +52,34 @@ function App() {
         element={
           <ProtectedRoute>
             <UserProfileUpdate />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/about"
+        element={<About />}
+      />
+
+      <Route
+        path="/contact"
+        element={<Contact />}
+      />
+
+      <Route
+        path="/shop"
+        element={
+          <ProtectedRoute>
+            <Shop />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <Category />
           </ProtectedRoute>
         }
       />
