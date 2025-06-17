@@ -50,16 +50,15 @@ const AddProduct = () => {
       payload.append('category', formData.category);
       payload.append('image', imageFile);
 
-      const res = await axios.post(
-        'http://localhost:3000/api/products/add',
-        payload,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const backendURL =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+      const res = await axios.post(`${backendURL}/api/products/add`, payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setMessage({ type: 'success', text: res.data.message });
       setFormData({ name: '', price: '', category: '', description: '' });

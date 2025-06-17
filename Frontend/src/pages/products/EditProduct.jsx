@@ -21,18 +21,18 @@ const EditProduct = () => {
     const fetchProduct = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const res = await axios.get(
-          `http://localhost:3000/api/products/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const backendURL =
+          import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+        const res = await axios.get(`${backendURL}/api/products/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
         setFormData(res.data);
         const imagePath = res.data.image.startsWith('/uploads/')
           ? res.data.image
           : `/uploads/${res.data.image}`;
-
-        setPreview(`http://localhost:3000${imagePath}`);
+        setPreview(`${backendURL}${imagePath}`);
       } catch (err) {
         setMessage({ type: 'error', text: 'Failed to fetch product' });
       }
@@ -67,16 +67,15 @@ const EditProduct = () => {
         payload.append('image', formData.image);
       }
 
-      const res = await axios.put(
-        `http://localhost:3000/api/products/${id}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      const backendURL =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+      const res = await axios.put(`${backendURL}/api/products/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       setMessage({ type: 'success', text: res.data.message });
       setTimeout(() => navigate('/adminHome'), 1500);
