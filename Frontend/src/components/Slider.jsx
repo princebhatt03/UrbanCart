@@ -5,12 +5,12 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import img1 from '../assets/images/SliderComponent/Slider1.jpg';
 import img2 from '../assets/images/SliderComponent/Slider2.jpg';
-import img3 from '../assets/images/SliderComponent/Slider3.jpg';
+import img3 from '../assets/images/SliderComponent/Slider4.jpg';
 
 const slides = [
   {
     img: img1,
-    title: 'Shop Our New Collection',
+    title: 'Sun Glases and more',
     subtitle: 'From high to low, classic or modern. We have you covered',
     btnText: 'Shop Now',
   },
@@ -22,8 +22,8 @@ const slides = [
   },
   {
     img: img3,
-    title: 'Skincares and more',
-    subtitle: 'Save up to 30% on Skincare products',
+    title: 'Shop our new Collection',
+    subtitle: 'Save up to 30% on any products',
     btnText: 'Shop Now',
   },
 ];

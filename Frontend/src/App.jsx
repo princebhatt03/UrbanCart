@@ -20,6 +20,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Shop from './pages/products/Shop';
 import Category from './pages/products/Category';
+import FAQPage from './components/FAGPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -64,6 +65,11 @@ function App() {
       <Route
         path="/contact"
         element={<Contact />}
+      />
+
+      <Route
+        path="/faqs"
+        element={<FAQPage />}
       />
 
       <Route

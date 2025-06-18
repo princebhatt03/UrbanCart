@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FaFacebookF,
   FaTwitter,
@@ -16,6 +17,8 @@ import {
 } from 'react-icons/fa';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-[#141414] text-white">
       {/* Newsletter Section */}
@@ -61,29 +64,37 @@ const Footer = () => {
 
       {/* Footer Links */}
       <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 animate-fade-in">
+        {/* Footer Sections */}
         {[
           {
             title: 'Quick Shop',
-            links: ['Women', 'Men', 'Kids', 'Sportswear', 'Sale'],
+            links: [
+              { name: 'Women', path: '/category/women' },
+              { name: 'Men', path: '/category/men' },
+              { name: 'Kids', path: '/category/kids' },
+              { name: 'Sportswear', path: '/category/sportswear' },
+              { name: 'Sale', path: '/sale' },
+            ],
           },
           {
             title: 'Informations',
             links: [
-              'About us',
-              'Careers',
-              'Privacy policy',
-              'Terms & condition',
-              'My Account',
+              { name: 'Home', path: '/' },
+              { name: 'About us', path: '/about' },
+              { name: 'Careers', path: '/careers' },
+              { name: 'Privacy policy', path: '/privacy-policy' },
+              { name: 'Terms & condition', path: '/terms-conditions' },
+              { name: 'Contact', path: '/contact' },
             ],
           },
           {
             title: 'Customer Services',
             links: [
-              'Request Personal Data',
-              "FAQ's",
-              'Contact Us',
-              'Orders and Returns',
-              'Support Center',
+              { name: 'Request Personal Data', path: '/request-data' },
+              { name: "FAQ's", path: '/faqs' },
+              { name: 'Contact Us', path: '/contact' },
+              { name: 'Orders and Returns', path: '/orders-returns' },
+              { name: 'Support Center', path: '/support' },
             ],
           },
         ].map((section, i) => (
@@ -94,14 +105,18 @@ const Footer = () => {
             <ul className="space-y-2">
               {section.links.map((link, idx) => (
                 <li key={idx}>
-                  <p className="hover:[#FF6900] cursor-pointer transition duration-200">
-                    {link}
+                  <p
+                    onClick={() => navigate(link.path)}
+                    className="hover:text-[#FF708E] cursor-pointer transition duration-200">
+                    {link.name}
                   </p>
                 </li>
               ))}
             </ul>
           </div>
         ))}
+
+        {/* Contact Section */}
         <div>
           <h4 className="text-lg font-semibold mb-4 text-[#FF708E]">
             Contact Us

@@ -7,6 +7,8 @@ import Slider from '../components/Slider';
 import CollectionGrid from '../components/CollectionGrid';
 import StoreFeatures from '../components/BlogAndStoreFeatures';
 import FeaturedBeautyPicks from '../components/BeautySection';
+import { Parallax } from 'swiper/modules';
+import KidsParallaxSection from '../components/Parallex';
 
 const FrontPage = () => {
   const BACKEND_URL =
@@ -96,8 +98,8 @@ const FrontPage = () => {
       </main>
 
       <CollectionGrid />
-      <StoreFeatures />
       <FeaturedBeautyPicks />
+      <KidsParallaxSection />
       <Footer />
     </>
   );
