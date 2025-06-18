@@ -55,7 +55,7 @@ const HeroSlider = () => {
                   <p className="text-sm sm:text-base md:text-lg animate-fade-in-up">
                     {slide.subtitle}
                   </p>
-                  <button className="mt-4 px-6 py-3 bg-white text-black font-medium rounded hover:bg-gray-200 transition animate-fade-in-up">
+                  <button className="mt-4 px-6 py-3 bg-[#FF708E] text-white font-medium rounded hover:opacity-70 cursor-pointer transition animate-fade-in-up">
                     {slide.btnText}
                   </button>
                 </div>

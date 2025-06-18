@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import Slider from '../components/Slider';
 import CollectionGrid from '../components/CollectionGrid';
 import StoreFeatures from '../components/BlogAndStoreFeatures';
+import FeaturedBeautyPicks from '../components/BeautySection';
 
 const FrontPage = () => {
   const BACKEND_URL =
@@ -37,7 +38,7 @@ const FrontPage = () => {
         className={`pt-20 pb-10 px-4 sm:px-6 lg:px-8 bg-gray-50 ${
           !loading && products.length > 0 ? 'min-h-screen' : ''
         }`}>
-        <h1 className="text-4xl font-bold text-center text-orange-600 mb-10">
+        <h1 className="text-4xl font-bold text-center text-[#FF708E] mb-10">
           Latest Products
         </h1>
 
@@ -80,7 +81,7 @@ const FrontPage = () => {
                   </h3>
                   <p className="text-sm text-gray-500 mb-3">₹{product.price}</p>
                   <div className="mt-auto flex gap-2">
-                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-md text-sm transition">
+                    <button className="w-full bg-[#FF708E] hover:bg-[#FF708E] text-white py-2 px-3 rounded-md text-sm transition">
                       Add to Cart
                     </button>
                     <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-md text-sm transition">
@@ -96,6 +97,7 @@ const FrontPage = () => {
 
       <CollectionGrid />
       <StoreFeatures />
+      <FeaturedBeautyPicks />
       <Footer />
     </>
   );

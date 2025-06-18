@@ -13,7 +13,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import logo from '../assets/images/logo.png';
-import defaultAvatar from '../assets/images/prof.webp'; 
+import defaultAvatar from '../assets/images/prof.webp';
 
 const UserHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -73,7 +73,7 @@ const UserHeader = () => {
             alt="Logo"
             className="h-12 w-auto"
           />
-          <span className="ml-2 text-xl font-bold text-orange-500 hidden sm:inline">
+          <span className="ml-2 text-xl font-bold text-[#FF708E] hidden sm:inline">
             UrbanKart
           </span>
         </Link>
@@ -92,8 +92,8 @@ const UserHeader = () => {
               key={link.path}
               to={link.path}
               className={({ isActive }) =>
-                `flex items-center gap-1 text-gray-700 hover:text-orange-500 transition duration-200 ${
-                  isActive ? 'font-semibold text-orange-500' : ''
+                `flex items-center gap-1 text-gray-700 hover:text-[#FF708E] transition duration-200 ${
+                  isActive ? 'font-semibold text-[#FF708E]' : ''
                 }`
               }>
               {link.icon}
@@ -152,8 +152,8 @@ const UserHeader = () => {
                 to={link.path}
                 onClick={() => setMenuOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 text-gray-700 hover:text-orange-500 transition-colors duration-200 ${
-                    isActive ? 'font-semibold text-orange-500' : ''
+                  `flex items-center gap-2 text-gray-700 hover:text-[#FF708E] transition-colors duration-200 ${
+                    isActive ? 'font-semibold text-[#FF708E]' : ''
                   }`
                 }>
                 {link.icon}

@@ -30,7 +30,7 @@ const features = [
     icon: (
       <FaTruck
         size={36}
-        className="text-[#FF6900]"
+        className="text-[#FF708E]"
       />
     ),
     title: 'Free Shipping & Return',
@@ -40,7 +40,7 @@ const features = [
     icon: (
       <FaDollarSign
         size={36}
-        className="text-[#FF6900]"
+        className="text-[#FF708E]"
       />
     ),
     title: 'Money Guarantee',
@@ -50,7 +50,7 @@ const features = [
     icon: (
       <FaComments
         size={36}
-        className="text-[#FF6900]"
+        className="text-[#FF708E]"
       />
     ),
     title: 'Online Support',
@@ -60,7 +60,7 @@ const features = [
     icon: (
       <FaCreditCard
         size={36}
-        className="text-[#FF6900]"
+        className="text-[#FF708E]"
       />
     ),
     title: 'Secure Payments',
@@ -97,11 +97,9 @@ const BlogAndStoreFeatures = () => {
                   </h3>
                   <p className="text-sm text-gray-500 mb-3">{blog.date}</p>
                   <p className="text-gray-700 text-sm mb-4">{blog.excerpt}</p>
-                  <a
-                    href="#"
-                    className="text-[#FF6900] font-medium text-sm hover:underline">
+                  <p className="text-[#FF708E] cursor-pointer font-medium text-sm hover:underline">
                     Read More
-                  </a>
+                  </p>
                 </div>
               </div>
             ))}

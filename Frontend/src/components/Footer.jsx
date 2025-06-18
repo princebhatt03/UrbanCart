@@ -23,7 +23,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-6">
           <div className="w-full lg:w-2/3">
             <h2 className="text-2xl font-semibold mb-4 text-center lg:text-left">
-              Sign up for <span className="text-[#FF6900]">newsletter</span>
+              Sign up for <span className="text-[#FF708E]">newsletter</span>
             </h2>
             <form className="flex flex-col sm:flex-row max-w-xl mx-auto lg:mx-0">
               <input
@@ -34,7 +34,7 @@ const Footer = () => {
               />
               <button
                 type="submit"
-                className="bg-[#FF6900] text-white px-6 py-3 rounded-b-md sm:rounded-r-md sm:rounded-bl-none hover:bg-[#ff4800] transition duration-300">
+                className="bg-[#FF708E] text-white px-6 py-3 rounded-b-md sm:rounded-r-md sm:rounded-bl-none hover:opacity-70 transition duration-300">
                 Subscribe
               </button>
             </form>
@@ -49,12 +49,11 @@ const Footer = () => {
               FaYoutube,
               FaVimeoV,
             ].map((Icon, index) => (
-              <a
+              <p
                 key={index}
-                href="#"
-                className="hover:text-[#FF6900] transition-transform transform hover:scale-110">
+                className="hover:text-[#FF708E] cursor-pointer transition-transform transform hover:scale-110">
                 <Icon />
-              </a>
+              </p>
             ))}
           </div>
         </div>
@@ -89,24 +88,22 @@ const Footer = () => {
           },
         ].map((section, i) => (
           <div key={i}>
-            <h4 className="text-lg font-semibold mb-4 text-[#FF6900]">
+            <h4 className="text-lg font-semibold mb-4 text-[#FF708E]">
               {section.title}
             </h4>
             <ul className="space-y-2">
               {section.links.map((link, idx) => (
                 <li key={idx}>
-                  <a
-                    href="#"
-                    className="hover:[#FF6900] transition duration-200">
+                  <p className="hover:[#FF6900] cursor-pointer transition duration-200">
                     {link}
-                  </a>
+                  </p>
                 </li>
               ))}
             </ul>
           </div>
         ))}
         <div>
-          <h4 className="text-lg font-semibold mb-4 text-[#FF6900]">
+          <h4 className="text-lg font-semibold mb-4 text-[#FF708E]">
             Contact Us
           </h4>
           <ul className="space-y-4 text-sm">
@@ -153,7 +150,7 @@ const Footer = () => {
             ].map((Icon, index) => (
               <Icon
                 key={index}
-                className="hover:text-[#FF6900] transition-transform transform hover:scale-110"
+                className="hover:text-[#FF708E] transition-transform transform hover:scale-110"
               />
             ))}
           </div>
