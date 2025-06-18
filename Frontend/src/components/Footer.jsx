@@ -1,103 +1,163 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-
 import {
+  FaFacebookF,
+  FaTwitter,
+  FaPinterest,
   FaInstagram,
-  FaLinkedinIn,
-  FaGithub,
-  FaWhatsapp,
+  FaTumblr,
+  FaYoutube,
+  FaVimeoV,
+  FaCcVisa,
+  FaCcMastercard,
+  FaCcDiscover,
+  FaCcPaypal,
+  FaCcAmex,
+  FaCreditCard,
 } from 'react-icons/fa';
 
-import logo from '../assets/images/logo.png';
-
 const Footer = () => {
-  const navigate = useNavigate();
-
   return (
-    <footer className="bg-gray-900 text-white w-full px-6 py-10 mt-10">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Logo & Description */}
-        <div className="flex flex-col items-center md:items-start">
-          <img
-            src={logo}
-            alt="UrbanKart Logo"
-            className="h-22 mb-4"
-          />
-          <p className="text-gray-400">
-            Your one-stop shop for trendy, affordable shopping. Click. Cart.
-            Conquer.
-          </p>
-        </div>
-
-        {/* Navigation Links */}
-        <div>
-          <h3 className="text-xl font-semibold mb-3">Quick Links</h3>
-          <ul className="space-y-2 text-gray-400">
-            <li
-              onClick={() => navigate('/')}
-              className="hover:text-white transition duration-300 cursor-pointer">
-              Home
-            </li>
-            <li
-              onClick={() => navigate('/shop')}
-              className="hover:text-white transition duration-300 cursor-pointer">
-              Shop
-            </li>
-            <li
-              onClick={() => navigate('/about')}
-              className="hover:text-white transition duration-300 cursor-pointer">
-              About Us
-            </li>
-            <li
-              onClick={() => navigate('/contact')}
-              className="hover:text-white transition duration-300 cursor-pointer">
-              Contact
-            </li>
-          </ul>
-        </div>
-
-        {/* Social Media */}
-        <div>
-          <h3 className="text-xl font-semibold mb-3">Follow Us</h3>
-          <div className="flex gap-4">
-            <a
-              href="https://github.com/princebhatt03"
-              target="_blank"
-              rel="noopener noreferrer">
-              <FaGithub className="text-xl hover:text-white" />
-            </a>
-            <a
-              href="https://wa.me/916265307739"
-              target="_blank"
-              rel="noopener noreferrer">
-              <FaWhatsapp className="text-xl hover:text-green-400" />
-            </a>
-            <a
-              href="https://www.instagram.com/prince20.02/"
-              target="_blank"
-              rel="noopener noreferrer">
-              <FaInstagram className="text-xl hover:text-pink-500" />
-            </a>
-            <a
-              href="https://www.linkedin.com/in/prince-bhatt-0958a725a/"
-              target="_blank"
-              rel="noopener noreferrer">
-              <FaLinkedinIn className="text-xl hover:text-blue-500" />
-            </a>
+    <footer className="bg-[#141414] text-white">
+      {/* Newsletter Section */}
+      <div className="py-10 px-4 bg-white border-b animate-fade-in-up">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-6">
+          <div className="w-full lg:w-2/3">
+            <h2 className="text-2xl font-semibold mb-4 text-center lg:text-left">
+              Sign up for <span className="text-[#FF6900]">newsletter</span>
+            </h2>
+            <form className="flex flex-col sm:flex-row max-w-xl mx-auto lg:mx-0">
+              <input
+                type="email"
+                placeholder="Email address"
+                className="flex-1 p-3 border text-black border-gray-300 rounded-t-md sm:rounded-l-md sm:rounded-tr-none focus:outline-none"
+                required
+              />
+              <button
+                type="submit"
+                className="bg-[#FF6900] text-white px-6 py-3 rounded-b-md sm:rounded-r-md sm:rounded-bl-none hover:bg-[#ff4800] transition duration-300">
+                Subscribe
+              </button>
+            </form>
+          </div>
+          <div className="flex justify-center lg:justify-end space-x-4 text-xl text-gray-600">
+            {[
+              FaFacebookF,
+              FaTwitter,
+              FaPinterest,
+              FaInstagram,
+              FaTumblr,
+              FaYoutube,
+              FaVimeoV,
+            ].map((Icon, index) => (
+              <a
+                key={index}
+                href="#"
+                className="hover:text-[#FF6900] transition-transform transform hover:scale-110">
+                <Icon />
+              </a>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="text-center text-gray-500 text-sm mt-10 border-t border-gray-700 pt-4">
-        &copy; {new Date().getFullYear()} UrbanKart. All rights reserved. <br />
-        Developed by{' '}
-        <a
-          href="https://www.linkedin.com/in/prince-bhatt-0958a725a/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline">
-          Prince Bhatt
-        </a>
+      {/* Footer Links */}
+      <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 animate-fade-in">
+        {[
+          {
+            title: 'Quick Shop',
+            links: ['Women', 'Men', 'Kids', 'Sportswear', 'Sale'],
+          },
+          {
+            title: 'Informations',
+            links: [
+              'About us',
+              'Careers',
+              'Privacy policy',
+              'Terms & condition',
+              'My Account',
+            ],
+          },
+          {
+            title: 'Customer Services',
+            links: [
+              'Request Personal Data',
+              "FAQ's",
+              'Contact Us',
+              'Orders and Returns',
+              'Support Center',
+            ],
+          },
+        ].map((section, i) => (
+          <div key={i}>
+            <h4 className="text-lg font-semibold mb-4 text-[#FF6900]">
+              {section.title}
+            </h4>
+            <ul className="space-y-2">
+              {section.links.map((link, idx) => (
+                <li key={idx}>
+                  <a
+                    href="#"
+                    className="hover:[#FF6900] transition duration-200">
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div>
+          <h4 className="text-lg font-semibold mb-4 text-[#FF6900]">
+            Contact Us
+          </h4>
+          <ul className="space-y-4 text-sm">
+            <li>
+              <p className="font-medium">Address:</p>
+              <p>
+                55 Gallaxy Enque,
+                <br />
+                2568 street, 23568 NY
+              </p>
+            </li>
+            <li>
+              <p className="font-medium">Phone:</p>
+              <p>123456789</p>
+            </li>
+            <li>
+              <p className="font-medium">Email:</p>
+              <p>princebhatt316@gmail.com</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Footer Bottom */}
+      <div className="border-t py-6 px-4 bg-[#141414] animate-fade-in-up">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-white gap-4">
+          <p>
+            <a
+              href="https://www.linkedin.com/in/prince-bhatt-0958a725a/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline">
+              Designed by Prince Bhatt
+            </a>
+          </p>
+          <div className="flex space-x-4 text-xl">
+            {[
+              FaCcVisa,
+              FaCcMastercard,
+              FaCcDiscover,
+              FaCcPaypal,
+              FaCcAmex,
+              FaCreditCard,
+            ].map((Icon, index) => (
+              <Icon
+                key={index}
+                className="hover:text-[#FF6900] transition-transform transform hover:scale-110"
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </footer>
   );
