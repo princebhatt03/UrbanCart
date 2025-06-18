@@ -6,6 +6,8 @@ import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import AdminHeader from '../../components/AdminHeader';
 
 const AdminHome = () => {
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,11 +21,13 @@ const AdminHome = () => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem('adminToken');
-        const res = await axios.get('http://localhost:3000/api/products', {
+
+        const res = await axios.get(`${BACKEND_URL}/api/products`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+
         setProducts(res.data.products || []);
       } catch (err) {
         setError('Failed to load products');
@@ -39,15 +43,16 @@ const AdminHome = () => {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(
-        `http://localhost:3000/api/products/${selectedProduct}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          data: { password },
-        }
-      );
+      const BACKEND_URL =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+      await axios.delete(`${BACKEND_URL}/api/products/${selectedProduct}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: { password },
+      });
+
       setProducts(products.filter(p => p._id !== selectedProduct));
       setShowModal(false);
       setPassword('');
@@ -91,14 +96,14 @@ const AdminHome = () => {
                 key={product._id}
                 className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-4 flex flex-col">
                 <img
-                  src={`http://localhost:3000${
+                  src={`${BACKEND_URL}${
                     product.image.startsWith('/uploads/')
                       ? product.image
                       : `/uploads/${product.image}`
                   }`}
                   alt={product.name}
-                  className="w-full h-44 object-cover rounded-lg mb-3"
                 />
+
                 <h3 className="text-lg font-bold text-gray-800">
                   {product.name}
                 </h3>

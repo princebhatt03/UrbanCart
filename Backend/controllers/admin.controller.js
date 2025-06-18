@@ -195,25 +195,42 @@ function adminController() {
 
     // Delete Admin
     async deleteAdmin(req, res) {
-      const adminId = req.params.id;
-      const { password } = req.body;
+      try {
+        const adminId = req.params.id;
+        const { password } = req.body;
 
-      if (req.admin.id !== adminId) {
-        return res.status(403).json({ message: 'Unauthorized.' });
+        // Validate input
+        if (!password) {
+          return res.status(400).json({ message: 'Password is required.' });
+        }
+
+        // Ensure the logged-in admin is deleting their own account
+        if (req.admin.id !== adminId) {
+          return res.status(403).json({ message: 'Unauthorized access.' });
+        }
+
+        const admin = await Admin.findById(adminId);
+        if (!admin) {
+          return res.status(404).json({ message: 'Admin not found.' });
+        }
+
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (!isMatch) {
+          return res.status(401).json({ message: 'Incorrect password.' });
+        }
+
+        await Admin.findByIdAndDelete(adminId);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Admin account deleted successfully.',
+        });
+      } catch (error) {
+        console.error('Error deleting admin:', error);
+        return res
+          .status(500)
+          .json({ message: 'Server error. Try again later.' });
       }
-
-      const admin = await Admin.findById(adminId);
-      if (!admin) return res.status(404).json({ message: 'Admin not found' });
-
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Incorrect password' });
-      }
-
-      await Admin.findByIdAndDelete(adminId);
-      res
-        .status(200)
-        .json({ success: true, message: 'Admin deleted successfully' });
     },
   };
 }

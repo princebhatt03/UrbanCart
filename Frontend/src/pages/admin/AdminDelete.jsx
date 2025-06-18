@@ -23,11 +23,25 @@ const AdminDelete = () => {
       if (storedAdmin && storedToken) {
         try {
           const parsedAdmin = JSON.parse(storedAdmin);
+
+          // If _id is missing but id exists, fallback
+          if (!parsedAdmin._id && parsedAdmin.id) {
+            parsedAdmin._id = parsedAdmin.id;
+          }
+
+          if (!parsedAdmin._id) {
+            setErrorMessage('Invalid admin data. Please log in again.');
+            navigate('/adminLogin');
+            return;
+          }
+
           setAdmin(parsedAdmin);
           setToken(storedToken);
+
           const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
             ? `${backendURL}${parsedAdmin.profileImage}`
             : defaultImage;
+
           setPreviewImage(imageURL);
         } catch (err) {
           console.error('Error parsing admin data from localStorage:', err);
@@ -49,6 +63,11 @@ const AdminDelete = () => {
     setErrorMessage('');
     setSuccessMessage('');
 
+    if (!admin?._id) {
+      setErrorMessage('Admin ID is missing.');
+      return;
+    }
+
     try {
       const response = await fetch(
         `${backendURL}/api/admin/delete/${admin._id}`,
@@ -58,7 +77,7 @@ const AdminDelete = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ password }),
+          body: JSON.stringify({ password }), // Only if your backend accepts body in DELETE
         }
       );
 
@@ -98,7 +117,6 @@ const AdminDelete = () => {
           Delete Admin Account
         </h2>
 
-        {/* Admin Image */}
         <div className="flex justify-center mb-4">
           <img
             src={previewImage}
@@ -133,7 +151,6 @@ const AdminDelete = () => {
           </button>
         </div>
 
-        {/* Password Confirmation Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">

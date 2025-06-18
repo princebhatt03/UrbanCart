@@ -16,27 +16,41 @@ const UserDelete = () => {
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('userInfo');
-    const storedToken = localStorage.getItem('userToken');
+    const loadUser = () => {
+      const storedUser = localStorage.getItem('userInfo');
+      const storedToken = localStorage.getItem('userToken');
 
-    if (storedUser && storedToken) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setToken(storedToken);
+      if (storedUser && storedToken) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
 
-        const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
-          ? `${backendURL}${parsedUser.profileImage}`
-          : defaultImage;
+          // Ensure _id exists
+          if (!parsedUser._id && parsedUser.id) {
+            parsedUser._id = parsedUser.id;
+          }
 
-        setPreviewImage(imageURL);
-      } catch (err) {
-        console.error('Error parsing localStorage:', err);
+          setUser(parsedUser);
+          setToken(storedToken);
+
+          const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
+            ? `${backendURL}${parsedUser.profileImage}`
+            : defaultImage;
+
+          setPreviewImage(imageURL);
+        } catch (err) {
+          console.error('Error parsing user data from localStorage:', err);
+          navigate('/userLogin');
+        }
+      } else {
         navigate('/userLogin');
       }
-    } else {
-      navigate('/userLogin');
-    }
+    };
+
+    loadUser();
+
+    // Optional: listen for localStorage changes
+    window.addEventListener('storage', loadUser);
+    return () => window.removeEventListener('storage', loadUser);
   }, [navigate]);
 
   const handleDelete = async () => {
@@ -44,7 +58,7 @@ const UserDelete = () => {
     setSuccessMessage('');
 
     if (!user || !user._id) {
-      setErrorMessage('User data is incomplete.');
+      setErrorMessage('User ID is missing.');
       return;
     }
 
@@ -64,10 +78,9 @@ const UserDelete = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Clear localStorage and redirect
         localStorage.removeItem('userInfo');
         localStorage.removeItem('userToken');
-        setSuccessMessage('User Deleted Successfully!');
+        setSuccessMessage('User account deleted successfully!');
         setShowModal(false);
         setPassword('');
 
@@ -79,7 +92,7 @@ const UserDelete = () => {
       }
     } catch (error) {
       console.error('Delete error:', error);
-      setErrorMessage('Server error! Please try again later.');
+      setErrorMessage('Server error. Please try again later.');
     }
   };
 

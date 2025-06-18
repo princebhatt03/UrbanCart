@@ -6,12 +6,15 @@ import Footer from '../components/Footer';
 import Slider from '../components/Slider';
 
 const FrontPage = () => {
+  const BACKEND_URL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/products');
+      const res = await axios.get(`${BACKEND_URL}/api/products`);
       setProducts(res.data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error.message);
@@ -53,7 +56,7 @@ const FrontPage = () => {
                 className="bg-white shadow-lg rounded-xl overflow-hidden flex flex-col transition hover:shadow-xl duration-300"
                 whileHover={{ scale: 1.03 }}>
                 <img
-                  src={`http://localhost:3000${
+                  src={`${BACKEND_URL}${
                     product.image.startsWith('/uploads/')
                       ? product.image
                       : `/uploads/${product.image}`
@@ -61,6 +64,7 @@ const FrontPage = () => {
                   alt={product.name}
                   className="h-48 w-full object-cover"
                   onError={e => {
+                    e.target.onerror = null;
                     e.target.src =
                       'https://via.placeholder.com/300x200?text=No+Image';
                   }}
