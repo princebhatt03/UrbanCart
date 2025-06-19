@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import Header from '../../components/UserHeader';
 import Footer from '../../components/Footer';
 import img1 from '../../assets/images/login.jpg';
+import { useGoogleLogin } from '@react-oauth/google';
+import { googleAuth } from '../../api';
 
 const UserLogin = () => {
   const navigate = useNavigate();
@@ -70,9 +72,38 @@ const UserLogin = () => {
     }, 4000);
   };
 
-  const handleGoogleLogin = () => {
-    alert('Google Login clicked! Add your OAuth flow here.');
+  const responseGoogle = async authResult => {
+    try {
+      if (authResult['code']) {
+        const result = await googleAuth(authResult['code']);
+        const { token, user } = result.data;
+
+        const finalUser = {
+          ...user,
+          password: '_GoogleAuth', // ❗️Ensure dummy password for Google users
+          profileImage: user.profileImage || user.image || '',
+        };
+
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userInfo', JSON.stringify(finalUser));
+
+        navigate('/');
+      }
+    } catch (error) {
+      console.log('❌ Error while handling Google Auth: ', error);
+      setErrorMessage('⚠️ Google login failed. Try again.');
+    }
+
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 4000);
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: responseGoogle,
+    onError: responseGoogle,
+    flow: 'auth-code',
+  });
 
   return (
     <>
@@ -162,9 +193,7 @@ const UserLogin = () => {
           {/* Right Column - Google & Register */}
           <div
             className="flex bg-cover bg-black/80 bg-center bg-no-repeat flex-col items-center justify-center"
-            style={{
-              backgroundImage: `url(${img1})`,
-            }}>
+            style={{ backgroundImage: `url(${img1})` }}>
             <div className="w-full max-w-xs text-center">
               <p className="text-gray-600 font-semibold mb-4">Or login with</p>
 

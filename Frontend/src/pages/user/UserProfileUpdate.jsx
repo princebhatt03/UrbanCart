@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import image1 from '../../assets/images/prof.webp';
+import defaultAvatar from '../../assets/images/prof.webp';
 
 const UserProfileUpdate = () => {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ const UserProfileUpdate = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
 
   const backendURL =
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -22,20 +23,27 @@ const UserProfileUpdate = () => {
     if (userData) {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
+
+      const googleUser = parsedUser.password?.includes('_GoogleAuth');
+      setIsGoogleUser(googleUser);
+
       setFormData({
-        fullName: parsedUser.fullName || '',
+        fullName: parsedUser.fullName || parsedUser.name || '',
         username: parsedUser.username || '',
         email: parsedUser.email || '',
         mobile: parsedUser.mobile || '',
-        password: '',
+        password: parsedUser.password || '',
         newPassword: '',
         confirmNewPassword: '',
-        profileImage: parsedUser.profileImage || '',
+        profileImage: parsedUser.profileImage || parsedUser.image || '',
       });
 
-      const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
-        ? `${backendURL}${parsedUser.profileImage}`
-        : image1;
+      let imageURL = defaultAvatar;
+      if (parsedUser.profileImage?.startsWith('/uploads/')) {
+        imageURL = `${backendURL}${parsedUser.profileImage}`;
+      } else if (parsedUser.profileImage || parsedUser.image) {
+        imageURL = parsedUser.profileImage || parsedUser.image;
+      }
 
       setPreviewImage(imageURL);
     } else {
@@ -58,6 +66,7 @@ const UserProfileUpdate = () => {
   const openPasswordModal = e => {
     e.preventDefault();
     setErrorMsg('');
+
     if (
       formData.newPassword &&
       formData.newPassword !== formData.confirmNewPassword
@@ -65,10 +74,15 @@ const UserProfileUpdate = () => {
       setErrorMsg('New passwords do not match!');
       return;
     }
-    setShowPasswordModal(true);
+
+    if (isGoogleUser) {
+      handleUpdate(true);
+    } else {
+      setShowPasswordModal(true);
+    }
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (skipPassword = false) => {
     setErrorMsg('');
     setSuccessMsg('');
 
@@ -77,23 +91,36 @@ const UserProfileUpdate = () => {
       return;
     }
 
-    if (!currentPassword) {
-      setErrorMsg('Please enter your current password to confirm.');
-      return;
+    const payload = new FormData();
+
+    if (!skipPassword) {
+      if (!currentPassword) {
+        setErrorMsg('Please enter your current password to confirm.');
+        return;
+      }
+      payload.append('currentPassword', currentPassword);
+    } else {
+      payload.append('currentPassword', 'dummy_GoogleAuth');
     }
 
-    const payload = new FormData();
-    payload.append('currentPassword', currentPassword);
-
-    if (formData.fullName !== user.fullName)
+    if (formData.fullName !== (user.fullName || user.name)) {
       payload.append('fullName', formData.fullName);
-    if (formData.username !== user.username)
+    }
+    if (formData.username !== user.username) {
       payload.append('username', formData.username);
-    if (formData.email !== user.email) payload.append('email', formData.email);
-    if (formData.mobile !== user.mobile)
+    }
+    if (formData.email !== user.email) {
+      payload.append('email', formData.email);
+    }
+    if (formData.mobile !== user.mobile) {
       payload.append('mobile', formData.mobile);
-    if (formData.newPassword) payload.append('password', formData.newPassword);
-    if (profileImageFile) payload.append('profileImage', profileImageFile);
+    }
+    if (formData.newPassword) {
+      payload.append('password', formData.newPassword);
+    }
+    if (profileImageFile) {
+      payload.append('profileImage', profileImageFile);
+    }
 
     try {
       const response = await fetch(`${backendURL}/api/user/updateUserProfile`, {
@@ -114,23 +141,25 @@ const UserProfileUpdate = () => {
 
         const updatedImageURL = data.user.profileImage?.startsWith('/uploads/')
           ? `${backendURL}${data.user.profileImage}`
-          : { image1 };
+          : data.user.image || defaultAvatar;
 
         setUser(data.user);
         setFormData(prev => ({
           ...prev,
-          profileImage: data.user.profileImage,
+          profileImage: data.user.profileImage || data.user.image,
+          newPassword: '',
+          confirmNewPassword: '',
         }));
         setPreviewImage(updatedImageURL);
-        setSuccessMsg('Profile updated successfully!');
+        setSuccessMsg('✅ Profile updated successfully!');
         setShowPasswordModal(false);
         setCurrentPassword('');
       } else {
-        setErrorMsg(data.message || 'Failed to update profile.');
+        setErrorMsg(data.message || '❌ Failed to update profile.');
       }
     } catch (error) {
       console.error('Update Error:', error);
-      setErrorMsg('Server error! Please try again later.');
+      setErrorMsg('❌ Server error! Please try again later.');
     }
   };
 
@@ -237,6 +266,12 @@ const UserProfileUpdate = () => {
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
+          {isGoogleUser && (
+            <p className="text-sm text-indigo-500 text-center -mt-3">
+              You logged in with Google. Please Create a Password
+            </p>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-center mt-4">
             <button
               type="button"
@@ -260,7 +295,7 @@ const UserProfileUpdate = () => {
           </div>
         </form>
 
-        {showPasswordModal && (
+        {!isGoogleUser && showPasswordModal && (
           <div className="fixed inset-0 bg-transparent backdrop-blur flex items-center justify-center z-50">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -294,7 +329,7 @@ const UserProfileUpdate = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={handleUpdate}
+                  onClick={() => handleUpdate(false)}
                   className="w-full sm:w-auto px-5 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
                   Confirm & Update
                 </button>

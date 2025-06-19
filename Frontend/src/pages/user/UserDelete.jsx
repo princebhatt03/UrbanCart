@@ -10,6 +10,7 @@ const UserDelete = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [previewImage, setPreviewImage] = useState(defaultImage);
 
   const backendURL =
@@ -24,17 +25,19 @@ const UserDelete = () => {
         try {
           const parsedUser = JSON.parse(storedUser);
 
-          // Ensure _id exists
           if (!parsedUser._id && parsedUser.id) {
             parsedUser._id = parsedUser.id;
           }
 
+          setIsGoogleUser(
+            parsedUser.password?.includes('_GoogleAuth') || false
+          );
           setUser(parsedUser);
           setToken(storedToken);
 
           const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
             ? `${backendURL}${parsedUser.profileImage}`
-            : defaultImage;
+            : parsedUser.profileImage || defaultImage;
 
           setPreviewImage(imageURL);
         } catch (err) {
@@ -47,8 +50,6 @@ const UserDelete = () => {
     };
 
     loadUser();
-
-    // Optional: listen for localStorage changes
     window.addEventListener('storage', loadUser);
     return () => window.removeEventListener('storage', loadUser);
   }, [navigate]);
@@ -71,7 +72,9 @@ const UserDelete = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ password }),
+          body: JSON.stringify({
+            password: isGoogleUser ? 'dummy_GoogleAuth' : password,
+          }),
         }
       );
 
@@ -111,7 +114,6 @@ const UserDelete = () => {
           Delete Account
         </h2>
 
-        {/* Profile Image */}
         <div className="flex justify-center mb-4">
           <img
             src={previewImage}
@@ -120,9 +122,18 @@ const UserDelete = () => {
           />
         </div>
 
-        <p className="text-gray-700 mb-2">
+        <p className="text-gray-700 mb-1">
           Username: <strong>{user.username}</strong>
         </p>
+        <p className="text-gray-600 mb-2">
+          Email: <strong>{user.email}</strong>
+        </p>
+
+        {isGoogleUser && (
+          <p className="text-sm text-indigo-600 mb-2">
+            You logged in via Google. No password required for deletion.
+          </p>
+        )}
 
         {successMessage && (
           <p className="text-green-600 text-sm font-semibold mb-4">
@@ -143,7 +154,6 @@ const UserDelete = () => {
           </button>
         </div>
 
-        {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-transparent backdrop-blur bg-opacity-30 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
@@ -157,14 +167,16 @@ const UserDelete = () => {
                 </p>
               )}
 
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="w-full px-4 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-red-400"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                autoFocus
-              />
+              {!isGoogleUser && (
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-red-400"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  autoFocus
+                />
+              )}
 
               <div className="flex justify-between">
                 <button

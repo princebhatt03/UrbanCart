@@ -21,8 +21,26 @@ import Contact from './pages/Contact';
 import Shop from './pages/products/Shop';
 import Category from './pages/products/Category';
 import FAQPage from './components/FAGPage';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
+  const GoogleAuthWrapper = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    return (
+      <GoogleOAuthProvider clientId={clientId}>
+        <UserLogin onLogin={setUser} />
+      </GoogleOAuthProvider>
+    );
+  };
+  const GoogleAuthWrapper1 = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    return (
+      <GoogleOAuthProvider clientId={clientId}>
+        <UserRegister />
+      </GoogleOAuthProvider>
+    );
+  };
+
   const [user, setUser] = useState(null);
   useEffect(() => {
     const info = localStorage.getItem('userInfo');
@@ -40,11 +58,11 @@ function App() {
       {/* Public Routes */}
       <Route
         path="/userRegister"
-        element={<UserRegister />}
+        element={<GoogleAuthWrapper1 />}
       />
       <Route
         path="/userLogin"
-        element={<UserLogin onLogin={setUser} />}
+        element={<GoogleAuthWrapper />}
       />
 
       {/* Protected User Profile Update */}

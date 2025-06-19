@@ -11,6 +11,7 @@ function generateToken(userId) {
 
 function userController() {
   return {
+    // ------------------------- Register -------------------------
     async registerUser(req, res) {
       const { fullName, username, email, mobile, password } = req.body;
 
@@ -58,6 +59,7 @@ function userController() {
       }
     },
 
+    // ------------------------- Login -------------------------
     async loginUser(req, res) {
       const { username, password } = req.body;
 
@@ -69,26 +71,13 @@ function userController() {
 
       try {
         const user = await User.findOne({ username });
-        if (!user) {
-          return res.status(404).json({ message: 'User not found.' });
-        }
+        if (!user) return res.status(404).json({ message: 'User not found.' });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (!isMatch)
           return res.status(401).json({ message: 'Invalid credentials.' });
-        }
 
-        const payload = {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          mobile: user.mobile,
-          profileImage: user.profileImage,
-        };
-
-        const token = jwt.sign(payload, JWT_SECRET, {
-          expiresIn: JWT_EXPIRES_IN,
-        });
+        const token = generateToken(user._id);
 
         return res.status(200).json({
           success: true,
@@ -101,6 +90,7 @@ function userController() {
             email: user.email,
             mobile: user.mobile,
             profileImage: user.profileImage,
+            password: user.password, // Needed on frontend for Google check
           },
         });
       } catch (error) {
@@ -109,6 +99,7 @@ function userController() {
       }
     },
 
+    // ------------------------- Update Profile -------------------------
     async updateUserProfile(req, res) {
       try {
         const userId = req.user.id;
@@ -118,56 +109,87 @@ function userController() {
         const { fullName, username, email, mobile, currentPassword, password } =
           req.body;
 
-        const isMatch = await bcrypt.compare(currentPassword, user.password);
-        if (!isMatch)
-          return res
-            .status(401)
-            .json({ message: 'Current password is incorrect' });
+        const isGoogleUser = user.password.endsWith('_GoogleAuth');
 
-        if (req.file) {
-          user.profileImage = `/uploads/${req.file.filename}`;
+        // Accept both dummy and actual currentPassword for Google users
+        if (!isGoogleUser) {
+          const isMatch = await bcrypt.compare(currentPassword, user.password);
+          if (!isMatch) {
+            return res
+              .status(401)
+              .json({ message: 'Current password is incorrect' });
+          }
         }
 
+        // Update fields
+        if (req.file) user.profileImage = `/uploads/${req.file.filename}`;
         if (fullName) user.fullName = fullName;
         if (username) user.username = username;
         if (email) user.email = email;
         if (mobile) user.mobile = mobile;
-        if (password) user.password = await bcrypt.hash(password, 10);
+
+        // Update password (for both types)
+        if (password) {
+          const hashed = await bcrypt.hash(password, 10);
+          user.password = hashed;
+        }
 
         await user.save();
-
         const token = generateToken(user._id);
-        res.status(200).json({
+
+        return res.status(200).json({
           message: 'Profile updated successfully',
           user,
           token,
         });
       } catch (err) {
         console.error('Update Profile Error:', err);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
       }
     },
 
+    // ------------------------- Delete User -------------------------
     async deleteUser(req, res) {
-      const userId = req.params.id;
-      const { password } = req.body;
+      try {
+        const userId = req.params.id;
+        const { password: currentPassword } = req.body;
 
-      if (req.user.id !== userId) {
-        return res.status(403).json({ message: 'Unauthorized.' });
+        // 1️⃣ Check if the logged-in user matches the target user
+        if (req.user.id !== userId) {
+          return res.status(403).json({ message: 'Unauthorized.' });
+        }
+
+        // 2️⃣ Find the user
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const isGoogleUser = user.password?.endsWith('_GoogleAuth');
+
+        // 3️⃣ Validate password if NOT a Google user
+        if (!isGoogleUser) {
+          if (!currentPassword) {
+            return res
+              .status(400)
+              .json({ message: 'Password is required to delete the account' });
+          }
+
+          const isMatch = await bcrypt.compare(currentPassword, user.password);
+          if (!isMatch) {
+            return res
+              .status(401)
+              .json({ message: 'Current password is incorrect' });
+          }
+        }
+
+        // 4️⃣ Delete the user
+        await User.findByIdAndDelete(userId);
+        return res
+          .status(200)
+          .json({ success: true, message: 'User deleted successfully' });
+      } catch (error) {
+        console.error('❌ Error deleting user:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
       }
-
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Incorrect password' });
-      }
-
-      await User.findByIdAndDelete(userId);
-      res
-        .status(200)
-        .json({ success: true, message: 'User deleted successfully' });
     },
   };
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Menu,
@@ -20,6 +20,7 @@ const UserHeader = () => {
   const [user, setUser] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const backendURL =
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -40,16 +41,25 @@ const UserHeader = () => {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
 
-        const imageURL = parsedUser.profileImage?.startsWith('/uploads/')
-          ? `${backendURL}${parsedUser.profileImage}`
-          : defaultAvatar;
+        let imageURL = defaultAvatar;
+
+        if (parsedUser.profileImage) {
+          if (parsedUser.profileImage.startsWith('/uploads/')) {
+            imageURL = `${backendURL}${parsedUser.profileImage}`;
+          } else {
+            imageURL = parsedUser.profileImage; 
+          }
+        }
 
         setProfileImageUrl(imageURL);
       } catch (error) {
         console.error('Failed to parse user info:', error);
       }
+    } else {
+      setUser(null);
+      setProfileImageUrl(null);
     }
-  }, []);
+  }, [location.pathname]); // Update on route change
 
   const navLinks = [
     { label: 'Home', path: '/', icon: <Home size={18} /> },
@@ -126,7 +136,7 @@ const UserHeader = () => {
                   alt="Profile"
                   className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
                 />
-                <span>{user.fullName || 'Profile'}</span>
+                <span>{user.fullName || user.name || 'Profile'}</span>
               </NavLink>
               <button
                 onClick={handleLogout}
@@ -189,7 +199,7 @@ const UserHeader = () => {
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
                   />
-                  <span>{user.fullName || 'Profile'}</span>
+                  <span>{user.fullName || user.name || 'Profile'}</span>
                 </NavLink>
                 <button
                   onClick={() => {

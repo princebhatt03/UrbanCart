@@ -4,25 +4,22 @@ const userController = require('../controllers/user.controller')();
 const isUserLoggedIn = require('../middlewares/user');
 const upload = require('../middlewares/upload');
 
-// Home test route
+// --------------------------- Test Route ---------------------------
 router.get('/', (req, res) => {
-  res.send('User API Working ✅');
+  res.send('✅ User API Working');
 });
 
-// Register route
+// --------------------------- Registration ---------------------------
 router.post(
   '/register',
-  upload.single('profileImage'),
+  upload.single('profileImage'), // Optional image upload
   userController.registerUser
 );
 
-// Login route
+// --------------------------- Login ---------------------------
 router.post('/login', userController.loginUser);
 
-// Update Profile route
-router.patch('/update/:id', isUserLoggedIn, userController.updateUserProfile);
-
-// Update Profile route
+// --------------------------- Update Profile ---------------------------
 router.put(
   '/updateUserProfile',
   isUserLoggedIn,
@@ -30,7 +27,7 @@ router.put(
   userController.updateUserProfile
 );
 
-// Delete Profile route
+// --------------------------- Delete User ---------------------------
 router.delete('/delete/:id', isUserLoggedIn, userController.deleteUser);
 
 module.exports = router;

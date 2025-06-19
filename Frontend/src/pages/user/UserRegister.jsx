@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import img1 from '../../assets/images/register.jpg';
 import Header from '../../components/UserHeader';
 import Footer from '../../components/Footer';
+import { useGoogleLogin } from '@react-oauth/google';
+import { googleAuth } from '../../api';
 
 const UserRegister = () => {
   const navigate = useNavigate();
@@ -100,9 +102,38 @@ const UserRegister = () => {
     }, 4000);
   };
 
-  const handleGoogleLogin = () => {
-    alert('Google Login clicked! Integrate your OAuth here.');
+  const responseGoogle = async authResult => {
+    try {
+      if (authResult['code']) {
+        const result = await googleAuth(authResult['code']);
+        const { token, user } = result.data;
+
+        const finalUser = {
+          ...user,
+          password: '_GoogleAuth', // ❗️Ensure dummy password for Google users
+          profileImage: user.profileImage || user.image || '',
+        };
+
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userInfo', JSON.stringify(finalUser));
+
+        navigate('/');
+      }
+    } catch (error) {
+      console.log('❌ Error while handling Google Auth: ', error);
+      setErrorMessage('⚠️ Google login failed. Try again.');
+    }
+
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 4000);
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: responseGoogle,
+    onError: responseGoogle,
+    flow: 'auth-code',
+  });
 
   return (
     <>
