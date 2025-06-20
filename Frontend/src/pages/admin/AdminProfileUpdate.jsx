@@ -13,6 +13,7 @@ const AdminProfileUpdate = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [profileImageFile, setProfileImageFile] = useState(null);
+  const [isGoogleAdmin, setIsGoogleAdmin] = useState(false);
 
   const backendURL =
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -21,22 +22,27 @@ const AdminProfileUpdate = () => {
     const adminData = localStorage.getItem('adminInfo');
     if (adminData) {
       const parsedAdmin = JSON.parse(adminData);
+      const googleAdminAuth = parsedAdmin?.password?.endsWith('_GoogleAuth');
+      setIsGoogleAdmin(googleAdminAuth);
       setAdmin(parsedAdmin);
+
       setFormData({
         fullName: parsedAdmin.fullName || '',
-        username: parsedAdmin.adminUsername || '',
+        adminUsername: parsedAdmin.adminUsername || '',
         email: parsedAdmin.email || '',
         mobile: parsedAdmin.mobile || '',
-        password: '',
         newPassword: '',
         confirmNewPassword: '',
-        profileImage: parsedAdmin.profileImage || '',
       });
 
-      const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
-        ? `${backendURL}${parsedAdmin.profileImage}`
-        : image1;
-
+      let imageURL = image1;
+      if (parsedAdmin.profileImage) {
+        if (parsedAdmin.profileImage.startsWith('/uploads/')) {
+          imageURL = `${backendURL}${parsedAdmin.profileImage}`;
+        } else if (parsedAdmin.profileImage.startsWith('http')) {
+          imageURL = parsedAdmin.profileImage;
+        }
+      }
       setPreviewImage(imageURL);
     } else {
       navigate('/adminLogin');
@@ -44,7 +50,8 @@ const AdminProfileUpdate = () => {
   }, [navigate]);
 
   const handleChange = e => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = e => {
@@ -58,14 +65,21 @@ const AdminProfileUpdate = () => {
   const openPasswordModal = e => {
     e.preventDefault();
     setErrorMsg('');
+
     if (
+      !isGoogleAdmin &&
       formData.newPassword &&
       formData.newPassword !== formData.confirmNewPassword
     ) {
       setErrorMsg('New passwords do not match!');
       return;
     }
-    setShowPasswordModal(true);
+
+    if (isGoogleAdmin) {
+      handleUpdate(); // No modal needed
+    } else {
+      setShowPasswordModal(true);
+    }
   };
 
   const handleUpdate = async () => {
@@ -77,29 +91,27 @@ const AdminProfileUpdate = () => {
       return;
     }
 
-    if (!currentPassword) {
+    if (!isGoogleAdmin && !currentPassword) {
       setErrorMsg('Please enter your current password to confirm.');
       return;
     }
 
     const payload = new FormData();
-    payload.append('currentPassword', currentPassword);
+
+    if (!isGoogleAdmin) payload.append('currentPassword', currentPassword);
 
     if (formData.fullName !== admin.fullName)
       payload.append('fullName', formData.fullName);
-    if (formData.username !== admin.adminUsername)
-      payload.append('username', formData.username);
+    if (formData.adminUsername !== admin.adminUsername)
+      payload.append('adminUsername', formData.adminUsername);
     if (formData.email !== admin.email) payload.append('email', formData.email);
     if (formData.mobile !== admin.mobile)
       payload.append('mobile', formData.mobile);
-    if (formData.newPassword) payload.append('password', formData.newPassword);
+    if (!isGoogleAdmin && formData.newPassword)
+      payload.append('password', formData.newPassword);
     if (profileImageFile) payload.append('profileImage', profileImageFile);
 
     try {
-      const backendURL =
-        import.meta.env.VITE_BACKEND_URL ||
-        import.meta.env.VITE_LOCAL_BACKEND_URL;
-
       const response = await fetch(
         `${backendURL}/api/admin/updateAdminProfile`,
         {
@@ -113,36 +125,47 @@ const AdminProfileUpdate = () => {
 
       const data = await response.json();
 
-      if (response.ok && data.admin) {
-        localStorage.setItem('adminInfo', JSON.stringify(data.admin));
-        if (data.token) {
-          localStorage.setItem('adminToken', data.token);
-        }
-        if (data.token) {
-          localStorage.setItem('adminToken', data.token);
+      if (response.status === 401) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminInfo');
+        navigate('/adminLogin');
+        return;
+      }
 
-          // 👇 Force token sync after update
+      if (response.ok && data.admin) {
+        if (isGoogleAdmin) {
+          data.admin.password = '_GoogleAuth';
+        }
+
+        localStorage.setItem('adminInfo', JSON.stringify(data.admin));
+
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
           window.dispatchEvent(new Event('storage'));
         }
 
-        const updatedImageURL = data.admin.profileImage?.startsWith('/uploads/')
-          ? `${backendURL}${data.admin.profileImage}`
-          : image1;
-
+        let updatedImageURL = image1;
+        if (data.admin.profileImage) {
+          if (data.admin.profileImage.startsWith('/uploads/')) {
+            updatedImageURL = `${backendURL}${data.admin.profileImage}`;
+          } else if (data.admin.profileImage.startsWith('http')) {
+            updatedImageURL = data.admin.profileImage;
+          }
+        }
         setAdmin(data.admin);
-        setFormData(prev => ({
-          ...prev,
-          profileImage: data.admin.profileImage,
-        }));
         setPreviewImage(updatedImageURL);
         setSuccessMsg('Profile updated successfully!');
         setShowPasswordModal(false);
         setCurrentPassword('');
+        setFormData(prev => ({
+          ...prev,
+          profileImage: data.admin.profileImage,
+        }));
       } else {
         setErrorMsg(data.message || 'Failed to update profile.');
       }
-    } catch (error) {
-      console.error('Update Error:', error);
+    } catch (err) {
+      console.error('Update Error:', err);
       setErrorMsg('Server error! Please try again later.');
     }
   };
@@ -204,9 +227,9 @@ const AdminProfileUpdate = () => {
 
           <input
             type="text"
-            name="username"
+            name="adminUsername"
             placeholder="Username"
-            value={formData.username}
+            value={formData.adminUsername}
             onChange={handleChange}
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
@@ -232,23 +255,26 @@ const AdminProfileUpdate = () => {
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
 
-          <input
-            type="password"
-            name="newPassword"
-            placeholder="New Password (optional)"
-            value={formData.newPassword}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-          />
-
-          <input
-            type="password"
-            name="confirmNewPassword"
-            placeholder="Confirm New Password"
-            value={formData.confirmNewPassword}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
-          />
+          {!isGoogleAdmin && (
+            <>
+              <input
+                type="password"
+                name="newPassword"
+                placeholder="New Password (optional)"
+                value={formData.newPassword}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+              <input
+                type="password"
+                name="confirmNewPassword"
+                placeholder="Confirm New Password"
+                value={formData.confirmNewPassword}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-center mt-4">
             <button
@@ -273,7 +299,7 @@ const AdminProfileUpdate = () => {
           </div>
         </form>
 
-        {showPasswordModal && (
+        {!isGoogleAdmin && showPasswordModal && (
           <div className="fixed inset-0 bg-transparent backdrop-blur flex items-center justify-center z-50">
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}

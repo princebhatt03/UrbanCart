@@ -10,12 +10,13 @@ import {
   LogOut,
 } from 'lucide-react';
 import logo from '../assets/images/logo.png';
-import defaultAvatar from '../assets/images/prof.webp'; 
+import defaultAvatar from '../assets/images/prof.webp';
 
 const AdminHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [admin, setAdmin] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const [adminName, setAdminName] = useState('Admin');
   const navigate = useNavigate();
 
   const backendURL =
@@ -37,11 +38,21 @@ const AdminHeader = () => {
         const parsedAdmin = JSON.parse(storedAdmin);
         setAdmin(parsedAdmin);
 
-        const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
-          ? `${backendURL}${parsedAdmin.profileImage}`
-          : defaultAvatar;
+        const isGoogleAdmin = parsedAdmin?.password?.endsWith('_GoogleAuth');
+        const name = parsedAdmin.fullName || 'Admin';
+        setAdminName(name);
 
-        setProfileImageUrl(imageURL);
+        let imageURL = defaultAvatar;
+
+        if (isGoogleAdmin) {
+          const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
+            ? `${backendURL}${parsedAdmin.profileImage}`
+            : parsedAdmin.profileImage || image1;
+
+          setProfileImageUrl(imageURL);
+        }
+
+        // setProfileImageUrl(imageURL);
       } catch (error) {
         console.error('Failed to parse admin info:', error);
       }
@@ -107,11 +118,11 @@ const AdminHeader = () => {
                 to="/adminProfile"
                 className="flex items-center gap-2 text-gray-700 hover:text-purple-600 font-medium">
                 <img
-                  src={profileImageUrl || defaultAvatar}
+                  src={profileImageUrl}
                   alt="Admin Profile"
                   className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
                 />
-                <span>{admin.fullName || 'Admin'}</span>
+                <span>{adminName}</span>
               </NavLink>
               <button
                 onClick={handleLogout}
@@ -153,11 +164,11 @@ const AdminHeader = () => {
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-2 text-gray-700 hover:text-purple-600 font-medium">
                   <img
-                    src={profileImageUrl || defaultAvatar}
+                    src={profileImageUrl}
                     alt="Admin"
                     className="w-8 h-8 rounded-full object-cover border-2 border-purple-500"
                   />
-                  <span>{admin.fullName || 'Admin'}</span>
+                  <span>{adminName}</span>
                 </NavLink>
                 <button
                   onClick={() => {

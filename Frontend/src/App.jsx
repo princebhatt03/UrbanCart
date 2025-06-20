@@ -32,11 +32,30 @@ function App() {
       </GoogleOAuthProvider>
     );
   };
+
   const GoogleAuthWrapper1 = () => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     return (
       <GoogleOAuthProvider clientId={clientId}>
         <UserRegister />
+      </GoogleOAuthProvider>
+    );
+  };
+
+  const GoogleAuthWrapper2 = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    return (
+      <GoogleOAuthProvider clientId={clientId}>
+        <AdminLogin />
+      </GoogleOAuthProvider>
+    );
+  };
+
+  const GoogleAuthWrapper3 = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    return (
+      <GoogleOAuthProvider clientId={clientId}>
+        <AdminRegister />
       </GoogleOAuthProvider>
     );
   };
@@ -136,12 +155,12 @@ function App() {
       />
       <Route
         path="/adminLogin"
-        element={<AdminLogin />}
+        element={<GoogleAuthWrapper2 />}
       />
 
       <Route
         path="/adminRegister"
-        element={<AdminRegister />}
+        element={<GoogleAuthWrapper3 />}
       />
 
       <Route

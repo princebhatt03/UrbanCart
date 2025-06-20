@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/admin.controller')();
 const isAdminLoggedIn = require('../middlewares/admin');
 const upload = require('../middlewares/upload');
+const { googleAdminLogin } = require('../controllers/admin.google.controller');
 
 // ******** ADMIN ROUTES ********
 
@@ -16,7 +17,7 @@ router.post(
 // Admin Login Route
 router.post('/login', adminController.loginAdmin);
 
-// Admin Profile Update
+// Admin Profile Update Route
 router.put(
   '/updateAdminProfile',
   isAdminLoggedIn,
@@ -24,10 +25,16 @@ router.put(
   adminController.updateAdminProfile
 );
 
-// Admin Delete by ID
-router.delete('/delete/:id', isAdminLoggedIn, adminController.deleteAdmin);
+// Admin Deletion Route
+router.delete(
+  '/delete/:id',
+  isAdminLoggedIn, 
+  adminController.deleteAdmin
+);
 
-// Optional: Admin Logout
+router.get('/google-login', adminController.googleLoginAdmin);
+
+// Admin Logout (Client must clear token)
 router.post('/logout', adminController.logoutAdmin);
 
 module.exports = router;

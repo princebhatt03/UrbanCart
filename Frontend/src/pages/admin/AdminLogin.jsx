@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import adminBg from '../../assets/images/login.jpg';
 import Header from '../../components/AdminHeader';
 import Footer from '../../components/Footer';
+import { useGoogleLogin } from '@react-oauth/google';
+import { googleAdminAuth } from '../../api';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -22,13 +24,44 @@ const AdminLogin = () => {
     setAdminLoginData({ ...adminLoginData, [e.target.name]: e.target.value });
   };
 
-  const handleGoogleLogin = () => {
-    alert('Google Login clicked! Add your OAuth flow here.');
+  const onGoogleSuccess = async resp => {
+    if (resp.code) {
+      try {
+        const { data } = await googleAdminAuth(resp.code);
+        const admin = data.admin;
+
+        if (!admin || !data.token) {
+          throw new Error('Invalid Google response');
+        }
+
+        admin.role = 'admin';
+        admin.password = '_GoogleAuth';
+
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminInfo', JSON.stringify(admin));
+
+        setSuccessMessage('✅ Google login successful!');
+        setMessage('');
+        setTimeout(() => navigate('/adminHome'), 1500);
+      } catch (err) {
+        console.error('Google login failed:', err);
+        setMessage('⚠️ Google login failed.');
+      } finally {
+        setTimeout(() => setMessage(''), 4000);
+      }
+    } else {
+      setMessage('⚠️ Google login was cancelled or failed.');
+    }
   };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: onGoogleSuccess,
+    onError: () => setMessage('⚠️ Google login failed.'),
+    flow: 'auth-code',
+  });
 
   const handleLogin = async e => {
     e.preventDefault();
-
     const { adminUsername, adminID, password } = adminLoginData;
 
     if (!adminUsername.trim() || !adminID.trim() || !password.trim()) {
@@ -38,10 +71,10 @@ const AdminLogin = () => {
 
     try {
       setLoading(true);
-
       const backendURL =
         import.meta.env.VITE_BACKEND_URL ||
-        import.meta.env.VITE_LOCAL_BACKEND_URL;
+        import.meta.env.VITE_LOCAL_BACKEND_URL ||
+        'http://localhost:3000';
 
       const response = await axios.post(`${backendURL}/api/admin/login`, {
         adminUsername: adminUsername.trim(),
@@ -50,16 +83,22 @@ const AdminLogin = () => {
       });
 
       if (response.data.success) {
-        localStorage.setItem('adminToken', response.data.token);
-        localStorage.setItem('adminInfo', JSON.stringify(response.data.admin));
+        const { admin, token } = response.data;
+
+        if (!admin || !token) {
+          setMessage('❌ Invalid admin credentials.');
+          return;
+        }
+
+        admin.role = 'admin';
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminInfo', JSON.stringify(admin));
 
         setSuccessMessage('✅ Login successful!');
         setMessage('');
         setTimeout(() => navigate('/adminHome'), 1500);
       } else {
-        setMessage(
-          response.data.message || '❌ Login failed. Check credentials.'
-        );
+        setMessage(response.data.message || '❌ Login failed.');
         setSuccessMessage('');
       }
     } catch (err) {
@@ -84,7 +123,7 @@ const AdminLogin = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Left Column - Form */}
+          {/* Left - Login Form */}
           <div>
             <h2 className="text-3xl font-extrabold mb-6 text-center md:text-left text-orange-700">
               Admin Login
@@ -151,8 +190,8 @@ const AdminLogin = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/')}
                 type="button"
+                onClick={() => navigate('/')}
                 className="w-full bg-orange-400 hover:bg-orange-500 text-white py-3 rounded-xl font-semibold shadow-lg transition duration-300">
                 Back to Home
               </motion.button>
@@ -160,8 +199,8 @@ const AdminLogin = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/userLogin')}
                 type="button"
+                onClick={() => navigate('/userLogin')}
                 className="w-full bg-orange-200 hover:bg-orange-300 text-white py-3 rounded-xl font-semibold shadow-lg transition duration-300">
                 Login as a User
               </motion.button>
@@ -177,17 +216,16 @@ const AdminLogin = () => {
             </p>
           </div>
 
-          {/* Right Column - Background Image */}
+          {/* Right - Google Login */}
           <div
             className="bg-cover bg-center bg-no-repeat rounded-2xl md:flex items-center justify-center"
             style={{ backgroundImage: `url(${adminBg})` }}>
             <div className="p-6 w-full rounded-xl text-white text-center">
               <p className="text-gray-600 font-semibold mb-4">Or login with</p>
-
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleGoogleLogin}
+                onClick={googleLogin}
                 className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-xl py-3 text-gray-700 font-semibold shadow-md hover:shadow-lg transition mb-6">
                 <svg
                   className="w-6 h-6 mr-2"

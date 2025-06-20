@@ -5,6 +5,8 @@ import axios from 'axios';
 import Header from '../../components/AdminHeader';
 import Footer from '../../components/Footer';
 import adminRegisterBg from '../../assets/images/register.jpg';
+import { useGoogleLogin } from '@react-oauth/google';
+import { googleAuth } from '../../api';
 
 const AdminRegister = () => {
   const navigate = useNavigate();
@@ -111,9 +113,38 @@ const AdminRegister = () => {
     }
   };
 
-  const handleGoogleRegister = () => {
-    alert('Google OAuth for Admin coming soon...');
+  const responseGoogle = async authResult => {
+    try {
+      if (authResult['code']) {
+        const result = await googleAuth(authResult['code']);
+        const { token, user } = result.data;
+
+        const finalUser = {
+          ...user,
+          password: '_GoogleAuth',
+          profileImage: user.profileImage || user.image || '',
+        };
+
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userInfo', JSON.stringify(finalUser));
+
+        navigate('/adminHome');
+      }
+    } catch (error) {
+      console.log('❌ Error while handling Google Auth: ', error);
+      setErrorMessage('⚠️ Google login failed. Try again.');
+    }
+
+    setTimeout(() => {
+      setErrorMessage('');
+    }, 4000);
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: responseGoogle,
+    onError: responseGoogle,
+    flow: 'auth-code',
+  });
 
   return (
     <>
@@ -272,7 +303,7 @@ const AdminRegister = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleGoogleRegister}
+                onClick={handleGoogleLogin}
                 className="flex items-center justify-center w-full max-w-xs bg-white border border-gray-300 rounded-xl py-3 text-gray-700 font-semibold shadow-md hover:shadow-lg transition">
                 <svg
                   className="w-6 h-6 mr-2"
