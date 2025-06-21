@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,6 +11,7 @@ import {
   StickyNote,
   Upload,
 } from 'lucide-react';
+import { io } from 'socket.io-client';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -25,6 +26,17 @@ const AddProduct = () => {
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [socket, setSocket] = useState(null);
+
+  const backendURL =
+    import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+  useEffect(() => {
+    const newSocket = io(backendURL);
+    setSocket(newSocket);
+
+    return () => newSocket.disconnect();
+  }, [backendURL]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -50,9 +62,6 @@ const AddProduct = () => {
       payload.append('category', formData.category);
       payload.append('image', imageFile);
 
-      const backendURL =
-        import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-
       const res = await axios.post(`${backendURL}/api/products/add`, payload, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -61,6 +70,11 @@ const AddProduct = () => {
       });
 
       setMessage({ type: 'success', text: res.data.message });
+
+      if (socket) {
+        socket.emit('newProductUploaded', res.data.product); 
+      }
+
       setFormData({ name: '', price: '', category: '', description: '' });
       setImageFile(null);
 

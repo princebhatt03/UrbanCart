@@ -25,6 +25,10 @@ const addProduct = async (req, res) => {
 
     await product.save();
 
+    // Emit real-time update to all users
+    const io = req.app.get('io');
+    io.emit('product-added', product);
+
     res.status(201).json({ message: 'Product added successfully', product });
   } catch (err) {
     console.error('Add product error:', err);
@@ -43,7 +47,7 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-// Get All Products by ID Controller
+// Get Product By ID Controller
 const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -54,7 +58,7 @@ const getProductById = async (req, res) => {
   }
 };
 
-// Update Products
+// Update Product Controller
 const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category } = req.body;
@@ -73,6 +77,11 @@ const updateProduct = async (req, res) => {
     }
 
     await product.save();
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    io.emit('product-updated', product);
+
     res.status(200).json({ message: 'Product updated successfully', product });
   } catch (error) {
     console.error('Update error:', error);
@@ -80,7 +89,7 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// DELETE Product Controller
+// Delete Product Controller
 const deleteProduct = async (req, res) => {
   try {
     const { password } = req.body;
@@ -90,14 +99,17 @@ const deleteProduct = async (req, res) => {
     if (!admin) {
       return res.status(401).json({ message: 'Unauthorized: Admin not found' });
     }
+
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Incorrect password' });
     }
+
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+
     const imagePath = path.join(
       __dirname,
       '..',
@@ -108,7 +120,12 @@ const deleteProduct = async (req, res) => {
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
     }
+
     await product.deleteOne();
+
+    // Emit real-time deletion event
+    const io = req.app.get('io');
+    io.emit('product-deleted', productId);
 
     return res.status(200).json({ message: 'Product deleted successfully' });
   } catch (error) {

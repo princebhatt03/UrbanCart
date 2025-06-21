@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  Menu,
-  X,
-  LayoutDashboard,
-  Users,
-  FileText,
-  LogOut,
-} from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import logo from '../assets/images/logo.png';
 import defaultAvatar from '../assets/images/prof.webp';
 
@@ -42,7 +35,7 @@ const AdminHeader = () => {
         const name = parsedAdmin.fullName || 'Admin';
         setAdminName(name);
 
-        let imageURL = defaultAvatar; 
+        let imageURL = defaultAvatar;
 
         if (parsedAdmin.profileImage) {
           if (parsedAdmin.profileImage.startsWith('/uploads/')) {
@@ -68,12 +61,6 @@ const AdminHeader = () => {
       label: 'Dashboard',
       path: '/adminHome',
       icon: <LayoutDashboard size={18} />,
-    },
-    { label: 'Users', path: '/adminUsers', icon: <Users size={18} /> },
-    {
-      label: 'Documents',
-      path: '/adminDocuments',
-      icon: <FileText size={18} />,
     },
   ];
 

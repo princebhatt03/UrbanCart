@@ -11,15 +11,41 @@ import { Parallax } from 'swiper/modules';
 import KidsParallaxSection from '../components/Parallex';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client'; 
 
 const FrontPage = () => {
   const navigate = useNavigate();
-
   const BACKEND_URL =
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Initialize socket
+  useEffect(() => {
+    const socket = io(BACKEND_URL);
+
+    socket.on('product-added', product => {
+      setProducts(prev => [product, ...prev]);
+      toast.success(`New product added: ${product.name}`);
+    });
+
+    socket.on('product-updated', updatedProduct => {
+      setProducts(prev =>
+        prev.map(p => (p._id === updatedProduct._id ? updatedProduct : p))
+      );
+      toast.info(`🔄 Product updated: ${updatedProduct.name}`);
+    });
+
+    socket.on('product-deleted', productId => {
+      setProducts(prev => prev.filter(p => p._id !== productId));
+      toast.warn(`A product was removed`);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [BACKEND_URL]);
 
   const fetchProducts = async () => {
     try {
@@ -37,7 +63,7 @@ const FrontPage = () => {
       const token = localStorage.getItem('userToken');
       if (!token) {
         toast.error('Please login to add products to cart');
-        setTimeout(() => navigate('/userLogin'), 1500); // 🔁 Redirect after showing toast
+        setTimeout(() => navigate('/userLogin'), 1500);
         return;
       }
 
@@ -62,9 +88,10 @@ const FrontPage = () => {
       toast.error(
         error?.response?.data?.message || '⚠️ Unauthorized: Please login again'
       );
-      setTimeout(() => navigate('/userLogin'), 1500); // 🔁 Redirect on error too
+      setTimeout(() => navigate('/userLogin'), 1500);
     }
   };
+
   useEffect(() => {
     fetchProducts();
   }, []);
