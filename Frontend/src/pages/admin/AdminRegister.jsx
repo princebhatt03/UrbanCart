@@ -116,28 +116,34 @@ const AdminRegister = () => {
   const responseGoogle = async authResult => {
     try {
       if (authResult['code']) {
-        const result = await googleAuth(authResult['code']);
-        const { token, user } = result.data;
+        const result = await axios.get(
+          `${
+            import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
+          }/api/admin/google-login?code=${authResult.code}`
+        );
 
-        const finalUser = {
-          ...user,
-          password: '_GoogleAuth',
-          profileImage: user.profileImage || user.image || '',
-        };
+        const { token, admin } = result.data;
 
-        localStorage.setItem('userToken', token);
-        localStorage.setItem('userInfo', JSON.stringify(finalUser));
+        // ✅ Save admin info and token properly
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem(
+          'adminInfo',
+          JSON.stringify({
+            ...admin,
+            password: '_GoogleAuth', // Mark Google auth
+            profileImage: admin.profileImage || admin.image || '',
+          })
+        );
 
+        window.dispatchEvent(new Event('storage')); // optional, in case other tabs use it
         navigate('/adminHome');
       }
     } catch (error) {
-      console.log('❌ Error while handling Google Auth: ', error);
-      setErrorMessage('⚠️ Google login failed. Try again.');
+      console.log('❌ Google Auth Error:', error);
+      setErrorMessage('⚠️ Google login failed. Please try again.');
     }
 
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 4000);
+    setTimeout(() => setErrorMessage(''), 4000);
   };
 
   const handleGoogleLogin = useGoogleLogin({
