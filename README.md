@@ -74,8 +74,8 @@ UrbanKart is a full-stack E-Commerce web application built using the MERN stack 
 
 ## 📁 Folder Structure (Backend)
 
----
 
+---
 UrbanKart/
 │
 ├── controllers/
@@ -105,7 +105,6 @@ UrbanKart/
 ├── .env
 ├── server.js
 └── ...
-
 ---
 
 ## 📮 API Routes
