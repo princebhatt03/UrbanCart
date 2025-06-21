@@ -6,12 +6,14 @@ const session = require('express-session');
 const path = require('path');
 const MongoStore = require('connect-mongo');
 const flash = require('express-flash');
+const fs = require('fs');
+
 const connectToDb = require('./db/db');
 const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
 const productRoutes = require('./routes/product.routes');
 const authRouter = require('./routes/auth.routes');
-const fs = require('fs');
+const cartRoutes = require('./routes/cart.routes'); // ✅ Cart routes import
 
 connectToDb();
 
@@ -56,22 +58,24 @@ app.use(
 // ✅ 4. Flash Middleware
 app.use(flash());
 
-// ✅ 5. Root Route (redirect to frontend)
-app.get('/', (req, res) => {
-  const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  return res.redirect(redirectUrl);
-});
-
+// ✅ 5. Public Uploads Folder
 const uploadPath = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
 
-// ✅ 6. API Routes
+// ✅ 6. Root Route (redirect to frontend)
+app.get('/', (req, res) => {
+  const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  return res.redirect(redirectUrl);
+});
+
+// ✅ 7. API Routes
 app.use('/auth', authRouter);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes); 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 module.exports = app;

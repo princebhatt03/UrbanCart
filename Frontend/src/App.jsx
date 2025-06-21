@@ -19,11 +19,21 @@ import Cart from './pages/products/Cart';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Shop from './pages/products/Shop';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Category from './pages/products/Category';
 import FAQPage from './components/FAGPage';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const info = localStorage.getItem('userInfo');
+    if (info) setUser(JSON.parse(info));
+  }, []);
+
+  // Wrappers for OAuth pages
   const GoogleAuthWrapper = () => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     return (
@@ -60,146 +70,135 @@ function App() {
     );
   };
 
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    const info = localStorage.getItem('userInfo');
-    if (info) setUser(JSON.parse(info));
-  }, []);
-
   return (
-    <Routes>
-      {/* Protected Home Page */}
-      <Route
-        path="/"
-        element={<FrontPage />}
-      />
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={<FrontPage />}
+        />
 
-      {/* Public Routes */}
-      <Route
-        path="/userRegister"
-        element={<GoogleAuthWrapper1 />}
-      />
-      <Route
-        path="/userLogin"
-        element={<GoogleAuthWrapper />}
-      />
+        <Route
+          path="/userRegister"
+          element={<GoogleAuthWrapper1 />}
+        />
+        <Route
+          path="/userLogin"
+          element={<GoogleAuthWrapper />}
+        />
 
-      {/* Protected User Profile Update */}
-      <Route
-        path="/userProfile"
-        element={
-          <ProtectedRoute>
-            <UserProfileUpdate />
-          </ProtectedRoute>
-        }
-      />
+        <Route
+          path="/userProfile"
+          element={
+            <ProtectedRoute>
+              <UserProfileUpdate />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/userDelete"
+          element={
+            <ProtectedRoute>
+              <UserDelete />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/shop"
+          element={
+            <ProtectedRoute>
+              <Shop />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <Category />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/about"
+          element={<About />}
+        />
+        <Route
+          path="/contact"
+          element={<Contact />}
+        />
+        <Route
+          path="/faqs"
+          element={<FAQPage />}
+        />
 
-      <Route
-        path="/about"
-        element={<About />}
-      />
+        <Route
+          path="/adminLogin"
+          element={<GoogleAuthWrapper2 />}
+        />
+        <Route
+          path="/adminRegister"
+          element={<GoogleAuthWrapper3 />}
+        />
 
-      <Route
-        path="/contact"
-        element={<Contact />}
-      />
+        <Route
+          path="/adminHome"
+          element={
+            <AdminProtectedRoute>
+              <AdminHome />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/adminProfile"
+          element={
+            <AdminProtectedRoute>
+              <AdminProfileUpdate />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/adminDelete"
+          element={
+            <AdminProtectedRoute>
+              <AdminDelete />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/addProducts"
+          element={
+            <AdminProtectedRoute>
+              <AddProduct />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/edit/:id"
+          element={<EditProduct />}
+        />
 
-      <Route
-        path="/faqs"
-        element={<FAQPage />}
-      />
+        {/* Catch-All for unknown routes */}
+        <Route
+          path="*"
+          element={<ErrorPage />}
+        />
+      </Routes>
 
-      <Route
-        path="/shop"
-        element={
-          <ProtectedRoute>
-            <Shop />
-          </ProtectedRoute>
-        }
+      {/* ✅ Outside Routes — Works Fine Now */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
       />
-
-      <Route
-        path="/categories"
-        element={
-          <ProtectedRoute>
-            <Category />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Protected User Deletion */}
-      <Route
-        path="/userDelete"
-        element={
-          <ProtectedRoute>
-            <UserDelete />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/cart"
-        element={
-          <ProtectedRoute>
-            <Cart />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/adminHome"
-        element={
-          <AdminProtectedRoute>
-            <AdminHome />
-          </AdminProtectedRoute>
-        }
-      />
-      <Route
-        path="/adminLogin"
-        element={<GoogleAuthWrapper2 />}
-      />
-
-      <Route
-        path="/adminRegister"
-        element={<GoogleAuthWrapper3 />}
-      />
-
-      <Route
-        path="/adminProfile"
-        element={
-          <AdminProtectedRoute>
-            <AdminProfileUpdate />
-          </AdminProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/adminDelete"
-        element={
-          <AdminProtectedRoute>
-            <AdminDelete />
-          </AdminProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/addProducts"
-        element={
-          <AdminProtectedRoute>
-            <AddProduct />
-          </AdminProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/edit/:id"
-        element={<EditProduct />}
-      />
-
-      {/* Catch-All for Unknown Routes */}
-      <Route
-        path="*"
-        element={<ErrorPage />}
-      />
-    </Routes>
+    </>
   );
 }
 

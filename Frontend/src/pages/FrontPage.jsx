@@ -9,8 +9,12 @@ import StoreFeatures from '../components/BlogAndStoreFeatures';
 import FeaturedBeautyPicks from '../components/BeautySection';
 import { Parallax } from 'swiper/modules';
 import KidsParallaxSection from '../components/Parallex';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const FrontPage = () => {
+  const navigate = useNavigate();
+
   const BACKEND_URL =
     import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
@@ -28,6 +32,39 @@ const FrontPage = () => {
     }
   };
 
+  const handleAddToCart = async productId => {
+    try {
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        toast.error('Please login to add products to cart');
+        setTimeout(() => navigate('/userLogin'), 1500); // 🔁 Redirect after showing toast
+        return;
+      }
+
+      const response = await axios.post(
+        `${BACKEND_URL}/api/cart/add`,
+        { productId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success || response.status === 200) {
+        toast.success('✅ Product added to cart');
+      } else {
+        toast.error(response.data.message || '⚠️ Something went wrong');
+      }
+    } catch (error) {
+      console.error('Add to Cart Error:', error);
+      toast.error(
+        error?.response?.data?.message || '⚠️ Unauthorized: Please login again'
+      );
+      setTimeout(() => navigate('/userLogin'), 1500); // 🔁 Redirect on error too
+    }
+  };
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -83,7 +120,9 @@ const FrontPage = () => {
                   </h3>
                   <p className="text-sm text-gray-500 mb-3">₹{product.price}</p>
                   <div className="mt-auto flex gap-2">
-                    <button className="w-full bg-[#FF708E] hover:bg-[#FF708E] text-white py-2 px-3 rounded-md text-sm transition">
+                    <button
+                      className="w-full bg-[#FF708E] hover:bg-[#FF708E] text-white py-2 px-3 rounded-md text-sm transition"
+                      onClick={() => handleAddToCart(product._id)}>
                       Add to Cart
                     </button>
                     <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-md text-sm transition">
