@@ -11,7 +11,7 @@ import { Parallax } from 'swiper/modules';
 import KidsParallaxSection from '../components/Parallex';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client'; 
+import { io } from 'socket.io-client';
 
 const FrontPage = () => {
   const navigate = useNavigate();
@@ -69,7 +69,7 @@ const FrontPage = () => {
 
       const response = await axios.post(
         `${BACKEND_URL}/api/cart/add`,
-        { productId },
+        { productId, productModel: 'Product' },
         {
           headers: {
             Authorization: `Bearer ${token}`,

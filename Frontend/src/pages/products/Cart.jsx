@@ -42,7 +42,7 @@ export default function CartPage() {
   const updateQuantity = (prodId, type) => {
     setCartItems(prev =>
       prev.map(i =>
-        i.product._id === prodId
+        i.product?._id === prodId
           ? {
               ...i,
               quantity:
@@ -53,24 +53,33 @@ export default function CartPage() {
     );
   };
 
-  const removeItem = async prodId => {
+  const removeItem = async (prodId, productModel) => {
     const token = localStorage.getItem('userToken');
     try {
-      await axios.delete(`${BACKEND_URL}/api/cart/remove/${prodId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
-      setCartItems(prev => prev.filter(i => i.product._id !== prodId));
+      await axios.delete(
+        `${BACKEND_URL}/api/cart/remove/${prodId}/${productModel}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
+      );
+      setCartItems(prev =>
+        prev.filter(
+          i => !(i.product?._id === prodId && i.productModel === productModel)
+        )
+      );
     } catch (err) {
       console.error('Remove error:', err);
       alert(err.response?.data?.message || 'Could not remove item.');
     }
   };
 
-  const subtotal = cartItems.reduce(
-    (acc, i) => acc + i.product.price * i.quantity,
-    0
-  );
+  const subtotal = cartItems.reduce((acc, i) => {
+    if (i.product && i.product.price) {
+      return acc + i.product.price * i.quantity;
+    }
+    return acc;
+  }, 0);
 
   return (
     <>
@@ -110,60 +119,67 @@ export default function CartPage() {
                 <div>Total</div>
               </div>
 
-              {cartItems.map(item => (
-                <motion.div
-                  key={item.product._id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="grid sm:grid-cols-5 gap-4 items-center border-b pb-4">
-                  <div className="sm:col-span-2 flex items-center gap-4">
-                    <img
-                      src={BACKEND_URL + item.product.image}
-                      alt={item.product.name}
-                      className="w-20 h-24 object-cover rounded shadow"
-                      onError={e =>
-                        (e.target.src = 'https://via.placeholder.com/100')
-                      }
-                    />
-                    <div>
-                      <p className="font-medium">{item.product.name}</p>
-                      {item.product.color && (
-                        <p className="text-sm text-gray-500">
-                          Color: {item.product.color}
+              {cartItems.map(item =>
+                item.product ? (
+                  <motion.div
+                    key={item.product._id + item.productModel}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="grid sm:grid-cols-5 gap-4 items-center border-b pb-4">
+                    <div className="sm:col-span-2 flex items-center gap-4">
+                      <img
+                        src={BACKEND_URL + item.product.image}
+                        alt={item.product.name}
+                        className="w-20 h-24 object-cover rounded shadow"
+                        onError={e =>
+                          (e.target.src = 'https://via.placeholder.com/100')
+                        }
+                      />
+                      <div>
+                        <p className="font-medium">{item.product.name}</p>
+                        {item.product.color && (
+                          <p className="text-sm text-gray-500">
+                            Color: {item.product.color}
+                          </p>
+                        )}
+                        {item.product.size && (
+                          <p className="text-sm text-gray-500">
+                            Size: {item.product.size}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">
+                          Source: {item.productModel}
                         </p>
-                      )}
-                      {item.product.size && (
-                        <p className="text-sm text-gray-500">
-                          Size: {item.product.size}
-                        </p>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                  <div>₹{item.product.price.toFixed(2)}</div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateQuantity(item.product._id, 'dec')}
-                      className="p-1 bg-gray-200 rounded hover:bg-gray-300">
-                      <FiMinus />
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.product._id, 'inc')}
-                      className="p-1 bg-gray-200 rounded hover:bg-gray-300">
-                      <FiPlus />
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-center gap-2">
-                    ₹{(item.product.price * item.quantity).toFixed(2)}
-                    <button
-                      onClick={() => removeItem(item.product._id)}
-                      className="text-[#FF708E] hover:text-red-600 text-lg">
-                      <FaTrashAlt />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                    <div>₹{item.product.price.toFixed(2)}</div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => updateQuantity(item.product._id, 'dec')}
+                        className="p-1 bg-gray-200 rounded hover:bg-gray-300">
+                        <FiMinus />
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.product._id, 'inc')}
+                        className="p-1 bg-gray-200 rounded hover:bg-gray-300">
+                        <FiPlus />
+                      </button>
+                    </div>
+                    <div className="flex justify-between items-center gap-2">
+                      ₹{(item.product.price * item.quantity).toFixed(2)}
+                      <button
+                        onClick={() =>
+                          removeItem(item.product._id, item.productModel)
+                        }
+                        className="text-[#FF708E] hover:text-red-600 text-lg">
+                        <FaTrashAlt />
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : null
+              )}
             </div>
 
             {/* Summary */}

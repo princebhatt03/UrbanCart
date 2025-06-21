@@ -9,8 +9,17 @@ const {
 
 const { authenticateCartUser } = require('../middlewares/cart.auth');
 
+// ✅ Add to cart
 router.post('/add', authenticateCartUser, addToCart);
+
+// ✅ Get user cart
 router.get('/', authenticateCartUser, getUserCart);
-router.delete('/remove/:productId', authenticateCartUser, removeFromCart);
+
+// ✅ Remove from cart 
+router.delete(
+  '/remove/:productId/:productModel',
+  authenticateCartUser,
+  removeFromCart
+);
 
 module.exports = router;

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Header from '../../components/UserHeader';
 import Footer from '../../components/Footer';
-import img1 from '../../assets/images/login.jpg';
+import img1 from '../../assets/images/login.png';
 import { useGoogleLogin } from '@react-oauth/google';
 import { googleAuth } from '../../api';
 

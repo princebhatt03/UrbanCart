@@ -1,4 +1,5 @@
 const Product = require('../models/product.model');
+const Shop = require('../models/shop.model');
 const path = require('path');
 const fs = require('fs');
 const Admin = require('../models/admin.model');
@@ -134,10 +135,23 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getShopProducts = async (req, res) => {
+  try {
+    const products = await Shop.find().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, products });
+  } catch (error) {
+    console.error('Error fetching shop products:', error.message);
+    res
+      .status(500)
+      .json({ success: false, message: 'Failed to load products' });
+  }
+};
+
 module.exports = {
   addProduct,
   getAllProducts,
   updateProduct,
   getProductById,
   deleteProduct,
+  getShopProducts,
 };

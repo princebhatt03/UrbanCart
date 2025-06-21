@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import adminBg from '../../assets/images/login.jpg';
+import adminBg from '../../assets/images/login.png';
 import Header from '../../components/AdminHeader';
 import Footer from '../../components/Footer';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -221,7 +221,6 @@ const AdminLogin = () => {
             className="bg-cover bg-center bg-no-repeat rounded-2xl md:flex items-center justify-center"
             style={{ backgroundImage: `url(${adminBg})` }}>
             <div className="p-6 w-full rounded-xl text-white text-center">
-              <p className="text-gray-600 font-semibold mb-4">Or login with</p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -248,8 +247,11 @@ const AdminLogin = () => {
                     fill="#EA4335"
                   />
                 </svg>
-                Login with Google
+                Google
               </motion.button>
+              <p className="text-red-700 font-semibold mb-4">
+                Or login with Google
+              </p>
             </div>
           </div>
         </motion.div>

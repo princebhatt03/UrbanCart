@@ -7,23 +7,19 @@ const {
   getProductById,
   updateProduct,
   deleteProduct,
+  getShopProducts, 
 } = require('../controllers/product.controller');
 
 const isAdmin = require('../middlewares/admin');
 
-// POST: Add Product
+// ✅ Public Route: Shop Page Products
+router.get('/shop', getShopProducts);
+
+// ✅ Admin Routes
 router.post('/add', isAdmin, upload.single('image'), addProduct);
-
-// GET: All Products
 router.get('/', getAllProducts);
-
-// GET: Single Products
 router.get('/:id', isAdmin, getProductById);
-
-// UPDATE: Products
 router.put('/:id', isAdmin, upload.single('image'), updateProduct);
-
-// DELETE: Products
 router.delete('/:id', isAdmin, deleteProduct);
 
 module.exports = router;
