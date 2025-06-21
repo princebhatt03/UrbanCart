@@ -42,20 +42,24 @@ const AdminHeader = () => {
         const name = parsedAdmin.fullName || 'Admin';
         setAdminName(name);
 
-        let imageURL = defaultAvatar;
+        let imageURL = defaultAvatar; 
 
-        if (isGoogleAdmin) {
-          const imageURL = parsedAdmin.profileImage?.startsWith('/uploads/')
-            ? `${backendURL}${parsedAdmin.profileImage}`
-            : parsedAdmin.profileImage || image1;
-
-          setProfileImageUrl(imageURL);
+        if (parsedAdmin.profileImage) {
+          if (parsedAdmin.profileImage.startsWith('/uploads/')) {
+            imageURL = `${backendURL}${parsedAdmin.profileImage}`;
+          } else {
+            imageURL = parsedAdmin.profileImage;
+          }
         }
 
-        // setProfileImageUrl(imageURL);
+        setProfileImageUrl(imageURL);
       } catch (error) {
         console.error('Failed to parse admin info:', error);
       }
+    } else {
+      setAdmin(null);
+      setAdminName('Admin');
+      setProfileImageUrl(defaultAvatar);
     }
   }, []);
 

@@ -59,7 +59,7 @@ const UserHeader = () => {
       setUser(null);
       setProfileImageUrl(null);
     }
-  }, [location.pathname]); // Update on route change
+  }, [location.pathname]); 
 
   const navLinks = [
     { label: 'Home', path: '/', icon: <Home size={18} /> },
