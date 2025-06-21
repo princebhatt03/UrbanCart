@@ -1,182 +1,202 @@
-# UrbanCart — E-Commerce Website
+# 🛒 UrbanKart - MERN E-Commerce Platform
 
-## 🌐 Project Overview
-
-**UrbanCart** is a fully responsive and modern **MERN Stack E-Commerce Web Application** developed to simulate a real-world shopping experience. It allows users to browse products, register/login, add items to the cart, and place orders. The app is designed with scalability, reusability, and extensibility in mind. It is ideal for demonstrating **full-stack development skills**.
-
-> **Subtitle**: *Click, Cart, Conquer*
+UrbanKart is a full-stack E-Commerce web application built using the MERN stack (MongoDB, Express.js, React.js, and Node.js). It features robust authentication, Google OAuth login, dynamic product management, secure admin/user roles, and fully functional REST APIs.
 
 ---
 
-## ✨ Features
+## 🌐 Live Demo
 
-### 🔑 Authentication
-
-* User Registration
-* User Login with JWT
-* Protected Routes (Only logged-in users can access cart/checkout)
-* Token stored in localStorage
-
-### 🛍️ Product & Cart
-
-* Product Listing with details
-* Add to Cart functionality
-* View cart items
-* Remove items from cart
-* Quantity update in cart (optional future feature)
-
-### 🚪 Admin Panel (Coming Soon)
-
-* Product Management (Add/Edit/Delete Products)
-* Order Management
-* Admin Dashboard
-
-### ⚡ Upcoming Features
-
-* Payment Gateway Integration (Stripe/Razorpay)
-* Google OAuth Login
-* Product Filtering and Sorting
-* Product Search
-* Wishlist
-* Order History
-* Admin CRUD operations
+**Frontend:** Coming Soon  
+**Backend (Render):** Coming Soon  
+**Portfolio:** [Visit Portfolio](https://princebhatt03.github.io/Portfolio)
 
 ---
 
-## 📂 Project Structure
+## 🧠 Tech Stack
+
+### 🔧 Backend
+- **Node.js** with **Express.js**
+- **MongoDB Atlas**
+- **JWT (JSON Web Token)** for secure authentication
+- **Multer** for file/image uploads
+- **Bcrypt.js** for password hashing
+- **Google OAuth 2.0**
+- **Render** for deployment
+
+### 🎨 Frontend
+- **React.js** (with Hooks)
+- **React Router DOM**
+- **Tailwind CSS** for styling
+- **Framer Motion** for UI animations
+- **Axios** for API calls
+
+---
+
+## 📚 Features
+
+### 👤 User Features
+- User Registration & Login (JWT)
+- Profile Management with Image Upload
+- Google OAuth Login Support
+- Delete User Profile with Password Confirmation
+
+### 👨‍💼 Admin Features
+- Admin Registration & Login (JWT)
+- Google OAuth Admin Registration/Login
+- Profile Update & Image Upload
+- Secure Password Change Flow
+- Delete Admin Profile (Password protected)
+
+### 🛍️ Product Features
+- Add, Update, Delete Products (Admin only)
+- View All Products (Public)
+- View Single Product (Admin only)
+
+---
+
+## 🔐 Authentication & Security
+
+- 🔑 JWT tokens are used for session persistence and route protection.
+- 🧠 Admin/User sessions are stored in `localStorage`.
+- 🔒 Passwords are securely hashed using Bcrypt.
+- 👮 Protected routes using middlewares for both users and admins.
+- 🛡️ Secure file/image uploads via Multer middleware.
+
+---
+
+## 🔐 Google OAuth
+
+- Admins and Users can log in using their Google accounts.
+- Uses **OAuth 2.0 Authorization Code Flow** for enhanced security.
+- Google accounts are flagged internally using a special `_GoogleAuth` password pattern to bypass normal password validation.
+
+---
+
+## 📁 Folder Structure (Backend)
 
 ```
-UrbanCart/
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── server.js
-│   └── .env
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-├── README.md
-└── package.json
+
+UrbanKart/
+│
+├── controllers/
+│ ├── admin.controller.js
+│ ├── admin.google.controller.js
+│ ├── user.controller.js
+│ ├── google.controller.js
+│ └── product.controller.js
+│
+├── middlewares/
+│ ├── admin.js
+│ ├── user.js
+│ └── upload.js
+│
+├── models/
+│ ├── Admin.js
+│ ├── User.js
+│ └── Product.js
+│
+├── routes/
+│ ├── admin.routes.js
+│ ├── user.routes.js
+│ ├── product.routes.js
+│ └── google.routes.js
+│
+├── uploads/
+├── .env
+├── server.js
+└── ...
+
 ```
 
----
+## 📮 API Routes
 
-## ⚙️ Technologies Used
+### 🔐 Admin Routes
 
-### Frontend (React + Vite + TailwindCSS)
-
-* React.js
-* React Router DOM
-* Tailwind CSS
-* Axios
-* Lucide Icons / React Icons
-
-### Backend (Node + Express)
-
-* Node.js
-* Express.js
-* MongoDB (with Mongoose)
-* JWT (jsonwebtoken)
-* bcryptjs
-* CORS
-
-### Database
-
-* MongoDB (MongoDB Atlas in production)
+| Method | Endpoint                          | Protected | Description                        |
+|--------|-----------------------------------|-----------|------------------------------------|
+| POST   | `/api/admin/register`             | ❌        | Register new admin with image     |
+| POST   | `/api/admin/login`                | ❌        | Admin login                        |
+| GET    | `/api/admin/google-login`         | ❌        | Admin Google OAuth login           |
+| PUT    | `/api/admin/updateAdminProfile`   | ✅        | Update profile with optional image |
+| DELETE | `/api/admin/delete/:id`           | ✅        | Delete admin with password check   |
+| POST   | `/api/admin/logout`               | ❌        | Logout (handled client-side)       |
 
 ---
 
-## 🌐 API Endpoints
+### 👤 User Routes
 
-### **User Auth Routes**
-
-* `POST /api/userRegister` - Register a new user
-* `POST /api/userLogin` - Login existing user
-
-### **Product Routes**
-
-* `GET /api/products` - Get all products
-* `POST /api/products` - Add product (admin)
-
-### **Cart Routes**
-
-* `POST /api/cart/add` - Add product to cart
-* `GET /api/cart` - Get cart items for a user
-* `DELETE /api/cart/:id` - Remove item from cart
-
-(Full routes depend on your implementation and may extend further)
+| Method | Endpoint                          | Protected | Description                        |
+|--------|-----------------------------------|-----------|------------------------------------|
+| GET    | `/api/user/`                      | ❌        | Test route                         |
+| POST   | `/api/user/register`              | ❌        | Register new user with image       |
+| POST   | `/api/user/login`                 | ❌        | User login                         |
+| PUT    | `/api/user/updateUserProfile`     | ✅        | Update profile with optional image |
+| DELETE | `/api/user/delete/:id`            | ✅        | Delete user with password check    |
 
 ---
 
-## 🚀 How It Works
+### 🛍️ Product Routes
 
-1. **Frontend** built in React using TailwindCSS connects with the Express backend through RESTful APIs.
-2. User registers or logs in → JWT Token is saved in localStorage.
-3. Authenticated users can browse and add items to the cart.
-4. The cart is managed in MongoDB using `userId` for user-specific data.
-5. All data is fetched via secure backend routes with validation and error handling.
-
----
-
-## 📅 Development Timeline
-
-### Phase 1: Core Setup (Done)
-
-* Project boilerplate (frontend/backend separation)
-* MongoDB Connection
-* User Register/Login
-* Cart model and user-specific cart system
-
-### Phase 2: Product & Cart Logic (Done)
-
-* Add to Cart
-* View Cart
-* Protected Routing
-
-### Phase 3: UI/UX Enhancements (In Progress)
-
-* Responsive Design
-* Animated Transitions
-* Google Login Button (Frontend Placeholder added)
-
-### Phase 4: Admin & Payments (Planned)
-
-* Admin Product Management
-* Stripe or Razorpay Integration
-* Order Summary and Status
+| Method | Endpoint              | Protected | Description                |
+|--------|-----------------------|-----------|----------------------------|
+| POST   | `/api/product/add`    | ✅ (Admin) | Add a new product          |
+| GET    | `/api/product/`       | ❌        | Get all products           |
+| GET    | `/api/product/:id`    | ✅ (Admin) | Get a single product       |
+| PUT    | `/api/product/:id`    | ✅ (Admin) | Update product by ID       |
+| DELETE | `/api/product/:id`    | ✅ (Admin) | Delete product by ID       |
 
 ---
 
-## 📆 Status
+### 🌐 Google OAuth Routes
 
-* ✅ User Login/Register with JWT Working
-* ✅ Add to Cart Functional
-* ✅ MongoDB Connected
-* ✅ Fully Responsive Design
-* ❓ Payment Gateway: Not Yet Implemented
-* ❓ Admin Dashboard: Under Development
-* ❓ Google Auth: Coming Soon
+| Method | Endpoint                 | Protected | Description                       |
+|--------|--------------------------|-----------|-----------------------------------|
+| GET    | `/api/google`            | ❌        | Google User OAuth redirect        |
+| GET    | `/api/google-login`      | ❌        | Google Admin OAuth redirect       |
 
 ---
 
-## 🎓 Author
+## 🔑 Environment Variables
 
-**Prince Bhatt**
-Full Stack Web Developer | IoT Engineer
-[GitHub: princebhatt03](https://github.com/princebhatt03)
+```env
+PORT=3000
+MONGO_URI=<Your MongoDB URI>
+JWT_SECRET=<Your JWT Secret>
+GOOGLE_CLIENT_ID=<Google OAuth Client ID>
+GOOGLE_CLIENT_SECRET=<Google OAuth Client Secret>
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/admin/google-login
+```
 
----
+📸 Screenshots
 
-## ✨ Contributions
+![s7](https://github.com/user-attachments/assets/9f4bf388-578d-4a5f-870a-8734ff92af31)
+![s8](https://github.com/user-attachments/assets/a5e16270-80f8-48aa-9780-2fd86648639e)
 
-This project is a learning and showcase initiative. Contributions, ideas, and improvements are always welcome!
+🚀 Getting Started
+Backend
+cd UrbanKart/Backend
+npm install
+npm run dev
+Frontend
+cd UrbanKart/Frontend
+npm install
+npm run dev
 
-Feel free to fork, clone, and improve it!
+📌 Upcoming Features
+🛒 Add to Cart & Wishlist
 
-> Made with passion and purpose for real-world application.
+💳 Payment Gateway Integration
+
+📦 Order Placement & Tracking
+
+📈 Admin Analytics Dashboard
+
+📱 Responsive PWA Support
+
+👨‍💻 Developer
+Prince Bhatt
+
+📧 princebhatt316@gmail.com
+
+🌐 Portfolio: https://princebhatt03.github.io/Portfolio
+
